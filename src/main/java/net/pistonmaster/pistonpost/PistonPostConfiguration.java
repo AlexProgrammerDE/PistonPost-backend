@@ -6,28 +6,28 @@ import jakarta.validation.constraints.NotEmpty;
 
 public class PistonPostConfiguration extends Configuration {
     @NotEmpty
-    private String template;
+    private String jwtTokenSecret;
 
     @NotEmpty
-    private String defaultName = "Stranger";
+    private String mongoDbUri;
 
     @JsonProperty
-    public String getTemplate() {
-        return template;
+    public String getJwtTokenSecret() {
+        return jwtTokenSecret;
     }
 
     @JsonProperty
-    public void setTemplate(String template) {
-        this.template = template;
+    public void setJwtTokenSecret(String jwtTokenSecret) {
+        this.jwtTokenSecret = jwtTokenSecret;
     }
 
     @JsonProperty
-    public String getDefaultName() {
-        return defaultName;
+    public String getMongoDbUri() {
+        return mongoDbUri;
     }
 
     @JsonProperty
-    public void setDefaultName(String name) {
-        this.defaultName = name;
+    public void setMongoDbUri(String mongoDbUri) {
+        this.mongoDbUri = mongoDbUri;
     }
 }

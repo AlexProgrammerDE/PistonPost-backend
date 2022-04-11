@@ -1,6 +1,5 @@
-template: Hello, %s!
-
-defaultName: ${DW_DEFAULT_NAME:-Stranger}
+jwtTokenSecret: ${JWT_TOKEN_SECRET}
+mongoDbUri: ${MONGO_DB_URI}
 
 # Database settings.
 #database:

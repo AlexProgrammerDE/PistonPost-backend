@@ -10,6 +10,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=S3cret
+      - MONGO_INITDB_DATABASE=pistonpost
   maildev:
     image: maildev/maildev
     ports:
@@ -17,4 +18,4 @@ services:
       - "1025:1025"
     environment:
       - MAILDEV_INCOMING_USER=admin
-      - MAILDEV_INCOMING_PASS=secretpassword0
+      - MAILDEV_INCOMING_PASS=secretpassword

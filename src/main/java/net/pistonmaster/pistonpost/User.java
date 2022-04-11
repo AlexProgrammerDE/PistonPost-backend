@@ -1,35 +1,38 @@
 package net.pistonmaster.pistonpost;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import net.pistonmaster.pistonpost.api.UserDataResponse;
+import net.pistonmaster.pistonpost.utils.MD5Util;
+
 import java.security.Principal;
-import java.util.Random;
 import java.util.Set;
 
+@Getter
+@RequiredArgsConstructor
 public class User implements Principal {
-    private static final Random rng = new Random();
-
+    private final String id;
     private final String name;
-
+    private final String avatar;
     private final Set<String> roles;
 
-    public User(String name) {
-        this.name = name;
-        this.roles = null;
+    public User(String id, String name, String email) {
+        this(
+                id,
+                name,
+                generateAvatar(email),
+                null
+        );
     }
 
-    public User(String name, Set<String> roles) {
-        this.name = name;
-        this.roles = roles;
+    private static String generateAvatar(String email) {
+        return String.format(
+                "https://www.gravatar.com/avatar/%s?d=retro",
+                MD5Util.md5Hex(email.toLowerCase())
+        );
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public int getId() {
-        return rng.nextInt(100);
-    }
-
-    public Set<String> getRoles() {
-        return roles;
+    public UserDataResponse generateUserDataResponse() {
+        return new UserDataResponse(name, avatar);
     }
 }

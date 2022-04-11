@@ -14,6 +14,6 @@ public class UserResource {
     @GET
     @Timed
     public UserDataResponse userData(@Auth User user) {
-        return new UserDataResponse("John Doe", "Email", "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=retro");
+        return user.generateUserDataResponse();
     }
 }

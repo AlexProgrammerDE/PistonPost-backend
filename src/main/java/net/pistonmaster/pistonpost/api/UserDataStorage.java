@@ -8,7 +8,9 @@ import org.bson.types.ObjectId;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public final class UserDataResponse {
+public final class UserDataStorage {
+    private ObjectId id;
     private String name;
-    private String avatar;
+    private String email;
+    private String image;
 }
