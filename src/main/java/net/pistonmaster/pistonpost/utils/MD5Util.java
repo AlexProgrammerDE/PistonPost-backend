@@ -5,6 +5,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class MD5Util {
+    private MD5Util() {
+    }
+
     public static String hex(byte[] array) {
         StringBuilder sb = new StringBuilder();
         for (byte b : array) {

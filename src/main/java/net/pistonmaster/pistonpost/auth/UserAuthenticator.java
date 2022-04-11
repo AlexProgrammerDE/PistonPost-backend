@@ -1,13 +1,11 @@
 package net.pistonmaster.pistonpost.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.javafaker.Faker;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
-import com.mongodb.client.result.UpdateResult;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.crypto.DirectDecrypter;
@@ -18,9 +16,7 @@ import keywhiz.hkdf.Hkdf;
 import net.pistonmaster.pistonpost.MongoManager;
 import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.api.JWTToken;
-import net.pistonmaster.pistonpost.api.UserDataResponse;
 import net.pistonmaster.pistonpost.api.UserDataStorage;
-import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;

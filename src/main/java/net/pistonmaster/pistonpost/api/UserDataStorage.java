@@ -12,5 +12,4 @@ public final class UserDataStorage {
     private ObjectId id;
     private String name;
     private String email;
-    private String image;
 }

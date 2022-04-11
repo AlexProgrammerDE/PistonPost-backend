@@ -21,11 +21,11 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public class MongoManager extends HealthCheck {
-    @Setter
-    private String connectUri;
     private final CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
     @Getter
     private final CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
+    @Setter
+    private String connectUri;
 
     public MongoClient createClient() {
         return MongoClients.create(
