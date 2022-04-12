@@ -1,6 +1,5 @@
 package net.pistonmaster.pistonpost.resources;
 
-import com.codahale.metrics.annotation.Timed;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -11,10 +10,10 @@ import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.api.SettingsResponse;
+import net.pistonmaster.pistonpost.storage.SettingsStorage;
 import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -39,8 +38,41 @@ public class SettingsResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public void setSettings() {
+    public void setSettings(@Auth User user, @FormParam("username") String username, @FormParam("bio") String bio, @FormParam("emailNotifications") String emailNotifications, @FormParam("theme") String theme) {
+        try (MongoClient mongoClient = application.createClient()) {
+            MongoDatabase database = mongoClient.getDatabase("pistonpost");
+            MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
+            Bson query = eq("_id", new ObjectId(user.getId()));
+            UserDataStorage userData = collection.find(query).first();
+
+            if (userData != null) {
+                SettingsStorage settings = userData.getSettings();
+
+                if (settings == null) {
+                    settings = new SettingsStorage();
+                }
+
+                if (!userData.getName().equals(username)) {
+                    Bson newNameQuery = eq("name", username);
+                    UserDataStorage newUserData = collection.find(newNameQuery).first();
+
+                    if (newUserData != null) {
+                        throw new WebApplicationException("Username already taken", 409);
+                    }
+
+                    userData.setName(username);
+                }
+
+                settings.setBio(bio);
+                settings.setEmailNotifications("on".equals(emailNotifications));
+                settings.setTheme(theme);
+
+                userData.setSettings(settings);
+
+                collection.replaceOne(query, userData);
+            }
+        }
     }
 
     @DELETE

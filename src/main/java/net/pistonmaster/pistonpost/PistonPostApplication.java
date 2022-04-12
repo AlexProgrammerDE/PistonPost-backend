@@ -13,7 +13,6 @@ import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
 import lombok.Getter;
-import net.pistonmaster.pistonpost.api.SettingsResponse;
 import net.pistonmaster.pistonpost.auth.AdminAuthorizer;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.resources.SettingsResource;
@@ -28,7 +27,6 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
     public static void main(String[] args) throws Exception {
         new PistonPostApplication().run("server", "/config.yml");
     }
-
     @Override
     public String getName() {
         return "PistonPost";
