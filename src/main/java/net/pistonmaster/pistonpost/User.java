@@ -21,7 +21,7 @@ public class User implements Principal {
                 id,
                 name,
                 generateAvatar(email),
-                null
+                Set.of()
         );
     }
 

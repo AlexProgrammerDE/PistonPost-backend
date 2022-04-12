@@ -15,7 +15,7 @@ import keywhiz.hkdf.Hkdf;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.api.JWTToken;
-import net.pistonmaster.pistonpost.api.UserDataStorage;
+import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -75,7 +75,7 @@ public class UserAuthenticator implements Authenticator<String, User> {
 
             return Optional.empty();
         } catch (JOSEException | ParseException | JsonProcessingException e) {
-            throw new AuthenticationException("Invalid JWT token", e);
+            return  Optional.empty();
         }
     }
 }
