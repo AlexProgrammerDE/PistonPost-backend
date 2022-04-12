@@ -1,5 +1,6 @@
 package net.pistonmaster.pistonpost;
 
+import com.github.javafaker.Faker;
 import com.mongodb.client.MongoClient;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
@@ -15,9 +16,10 @@ import net.pistonmaster.pistonpost.auth.AdminAuthorizer;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+@Getter
 public class PistonPostApplication extends Application<PistonPostConfiguration> {
-    @Getter
     private final MongoManager mongoManager = new MongoManager();
+    private final Faker faker = new Faker();
 
     public static void main(String[] args) throws Exception {
         new PistonPostApplication().run("server", "/config.yml");
@@ -47,7 +49,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
 
         environment.jersey().register(new AuthDynamicFeature(
                 new OAuthCredentialAuthFilter.Builder<User>()
-                        .setAuthenticator(new UserAuthenticator(mongoManager, configuration.getJwtTokenSecret()))
+                        .setAuthenticator(new UserAuthenticator(this, configuration.getJwtTokenSecret()))
                         .setAuthorizer(new AdminAuthorizer())
                         .setPrefix("Bearer")
                         .buildAuthFilter()));

@@ -1,7 +1,6 @@
 package net.pistonmaster.pistonpost.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.javafaker.Faker;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -13,7 +12,7 @@ import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.jackson.Jackson;
 import keywhiz.hkdf.Hkdf;
-import net.pistonmaster.pistonpost.MongoManager;
+import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.api.JWTToken;
 import net.pistonmaster.pistonpost.api.UserDataStorage;
@@ -32,14 +31,14 @@ import static com.mongodb.client.model.Filters.eq;
 public class UserAuthenticator implements Authenticator<String, User> {
     private static final Logger LOG = LoggerFactory.getLogger(UserAuthenticator.class);
     private final byte[] key;
-    private final MongoManager mongoManager;
+    private final PistonPostApplication application;
 
-    public UserAuthenticator(MongoManager mongoManager, String jwtTokenSecret) {
+    public UserAuthenticator(PistonPostApplication application, String jwtTokenSecret) {
         Hkdf hkdf = Hkdf.usingDefaults();
         SecretKey initialKey = hkdf.extract(null, jwtTokenSecret.getBytes(StandardCharsets.UTF_8));
 
         key = hkdf.expand(initialKey, "NextAuth.js Generated Encryption Key".getBytes(StandardCharsets.UTF_8), 32);
-        this.mongoManager = mongoManager;
+        this.application = application;
     }
 
     @Override
@@ -51,7 +50,7 @@ public class UserAuthenticator implements Authenticator<String, User> {
 
             JWTToken jwt = Jackson.newObjectMapper().readValue(jweObject.getPayload().toString(), JWTToken.class);
 
-            try (MongoClient mongoClient = mongoManager.createClient()) {
+            try (MongoClient mongoClient = application.createClient()) {
                 MongoDatabase database = mongoClient.getDatabase("pistonpost");
                 MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
@@ -60,11 +59,9 @@ public class UserAuthenticator implements Authenticator<String, User> {
 
                 if (storage != null) {
                     if (storage.getName() == null) {
-                        Faker faker = new Faker();
-
                         String potentialName;
                         do {
-                            potentialName = faker.funnyName().name().replace(" ", "");
+                            potentialName = application.getFaker().funnyName().name().replace(" ", "");
                         } while (potentialName.length() > 12);
 
                         storage.setName(potentialName);
@@ -75,10 +72,10 @@ public class UserAuthenticator implements Authenticator<String, User> {
                     return Optional.of(new User(jwt.getSub(), storage.getName(), storage.getEmail()));
                 }
             }
-        } catch (JOSEException | ParseException | JsonProcessingException e) {
-            e.printStackTrace();
-        }
 
-        return Optional.empty();
+            return Optional.empty();
+        } catch (JOSEException | ParseException | JsonProcessingException e) {
+            throw new AuthenticationException("Invalid JWT token", e);
+        }
     }
 }
