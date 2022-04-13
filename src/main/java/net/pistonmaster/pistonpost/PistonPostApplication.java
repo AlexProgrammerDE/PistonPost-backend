@@ -67,6 +67,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         environment.jersey().register(new TagResource(this));
         environment.jersey().register(new UserResource(this));
         environment.jersey().register(new SettingsResource(this));
+        environment.jersey().register(new PostsResource(this));
         environment.jersey().register(new PostResource(this));
     }
 
