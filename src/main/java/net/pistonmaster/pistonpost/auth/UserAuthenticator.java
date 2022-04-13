@@ -14,8 +14,8 @@ import io.dropwizard.jackson.Jackson;
 import keywhiz.hkdf.Hkdf;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
-import net.pistonmaster.pistonpost.utils.JWTToken;
 import net.pistonmaster.pistonpost.storage.UserDataStorage;
+import net.pistonmaster.pistonpost.utils.JWTToken;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -75,7 +75,7 @@ public class UserAuthenticator implements Authenticator<String, User> {
 
             return Optional.empty();
         } catch (JOSEException | ParseException | JsonProcessingException e) {
-            return  Optional.empty();
+            return Optional.empty();
         }
     }
 }

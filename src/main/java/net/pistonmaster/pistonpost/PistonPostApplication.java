@@ -16,7 +16,6 @@ import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.AdminAuthorizer;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.resources.*;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 @Getter

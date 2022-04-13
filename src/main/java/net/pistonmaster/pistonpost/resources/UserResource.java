@@ -22,6 +22,7 @@ import static com.mongodb.client.model.Filters.eq;
 @Produces(MediaType.APPLICATION_JSON)
 public class UserResource {
     private final PistonPostApplication application;
+
     @GET
     @Timed
     public UserDataResponse userData(@Auth User user) {

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.mongodb.client.model.Sorts.descending;
+
 @RequiredArgsConstructor
 @Path("/home")
 public class HomeResource {
