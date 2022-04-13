@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
+import net.pistonmaster.pistonpost.api.PostResponse;
 import net.pistonmaster.pistonpost.storage.PostStorage;
 
 import java.util.ArrayList;
@@ -26,15 +27,15 @@ public class HomeResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<PostStorage> getHomePosts(@Auth Optional<User> user) {
+    public List<PostResponse> getHomePosts(@Auth Optional<User> user) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
-            List<PostStorage> storageResponse = new ArrayList<>();
+            List<PostResponse> storageResponse = new ArrayList<>();
             for (PostStorage post : collection.find().sort(descending("_id")).limit(40)) {
                 if (!post.isUnlisted()) {
-                    storageResponse.add(post);
+                    storageResponse.add(application.getPostFillerService().fillPostStorage(post));
                 }
             }
 

@@ -16,12 +16,14 @@ import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.AdminAuthorizer;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.resources.*;
+import net.pistonmaster.pistonpost.utils.PostFillerService;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 @Getter
 public class PistonPostApplication extends Application<PistonPostConfiguration> {
     private final MongoManager mongoManager = new MongoManager();
     private final Faker faker = new Faker();
+    private final PostFillerService postFillerService = new PostFillerService(this);
 
     public static void main(String[] args) throws Exception {
         new PistonPostApplication().run("server", "/config.yml");
