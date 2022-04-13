@@ -16,7 +16,9 @@ import net.pistonmaster.pistonpost.utils.IDGenerator;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -50,6 +52,11 @@ public class PostResource {
             throw new WebApplicationException("You must have at least one tag!", 400);
         }
 
+        title = title.trim();
+        content = content.trim();
+        tags = tags.trim();
+        unlisted = unlisted.trim();
+
         String[] tagArray = tags.split(",");
 
         if (tagArray.length > 5) {
@@ -60,10 +67,12 @@ public class PostResource {
             throw new WebApplicationException("You must have at least one tag!", 400);
         }
 
+        List<String> tagList = new ArrayList<>();
         for (String tag : tagArray) {
             if (tag.length() > 20) {
                 throw new WebApplicationException("Tags must be less than 20 characters!", 400);
             }
+            tagList.add(tag.trim().replace(" ", "_"));
         }
 
         boolean unlistedBool = Boolean.parseBoolean(unlisted);
@@ -80,7 +89,7 @@ public class PostResource {
                     title,
                     content,
                     new ObjectId(user.getId()),
-                    List.of(tagArray),
+                    tagList,
                     timestamp,
                     unlistedBool
             );

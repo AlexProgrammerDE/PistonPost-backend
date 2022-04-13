@@ -3,6 +3,7 @@ package net.pistonmaster.pistonpost;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.api.UserDataResponse;
+import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import net.pistonmaster.pistonpost.utils.MD5Util;
 
 import java.security.Principal;
@@ -22,6 +23,14 @@ public class User implements Principal {
                 name,
                 generateAvatar(email),
                 Set.of()
+        );
+    }
+
+    public User(UserDataStorage userDataStorage) {
+        this(
+                userDataStorage.getId().toHexString(),
+                userDataStorage.getName(),
+                userDataStorage.getEmail()
         );
     }
 

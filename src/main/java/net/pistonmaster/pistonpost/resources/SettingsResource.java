@@ -9,7 +9,6 @@ import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
-import net.pistonmaster.pistonpost.api.SettingsResponse;
 import net.pistonmaster.pistonpost.storage.SettingsStorage;
 import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import org.bson.conversions.Bson;
@@ -24,15 +23,14 @@ public class SettingsResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public SettingsResponse getSettings(@Auth User user) {
+    public UserDataStorage getSettings(@Auth User user) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
             Bson query = eq("_id", new ObjectId(user.getId()));
-            UserDataStorage userData = collection.find(query).first();
 
-            return new SettingsResponse(userData);
+            return collection.find(query).first();
         }
     }
 

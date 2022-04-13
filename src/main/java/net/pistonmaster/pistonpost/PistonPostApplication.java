@@ -15,9 +15,7 @@ import io.dropwizard.forms.MultiPartBundle;
 import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.AdminAuthorizer;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
-import net.pistonmaster.pistonpost.resources.PostResource;
-import net.pistonmaster.pistonpost.resources.SettingsResource;
-import net.pistonmaster.pistonpost.resources.UserResource;
+import net.pistonmaster.pistonpost.resources.*;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
@@ -29,6 +27,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
     public static void main(String[] args) throws Exception {
         new PistonPostApplication().run("server", "/config.yml");
     }
+
     @Override
     public String getName() {
         return "PistonPost";
@@ -36,6 +35,8 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
 
     @Override
     public void initialize(Bootstrap<PistonPostConfiguration> bootstrap) {
+        bootstrap.addBundle(new MultiPartBundle());
+
         bootstrap.setConfigurationSourceProvider(new ResourceConfigurationSourceProvider());
 
         // Enable variable substitution with environment variables
@@ -63,8 +64,9 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
 
         mongoManager.setConnectUri(configuration.getMongoDbUri());
 
-        environment.jersey().register(MultiPartFeature.class);
-        environment.jersey().register(new UserResource());
+        environment.jersey().register(new HomeResource(this));
+        environment.jersey().register(new TagResource(this));
+        environment.jersey().register(new UserResource(this));
         environment.jersey().register(new SettingsResource(this));
         environment.jersey().register(new PostResource(this));
     }
