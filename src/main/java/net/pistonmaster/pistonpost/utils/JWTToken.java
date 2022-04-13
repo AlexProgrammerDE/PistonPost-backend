@@ -1,4 +1,4 @@
-package net.pistonmaster.pistonpost.api;
+package net.pistonmaster.pistonpost.utils;
 
 import lombok.Data;
 

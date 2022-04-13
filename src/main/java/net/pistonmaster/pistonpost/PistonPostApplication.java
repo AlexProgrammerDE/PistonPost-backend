@@ -15,8 +15,10 @@ import io.dropwizard.forms.MultiPartBundle;
 import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.AdminAuthorizer;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
+import net.pistonmaster.pistonpost.resources.PostResource;
 import net.pistonmaster.pistonpost.resources.SettingsResource;
 import net.pistonmaster.pistonpost.resources.UserResource;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 @Getter
@@ -34,8 +36,6 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
 
     @Override
     public void initialize(Bootstrap<PistonPostConfiguration> bootstrap) {
-        bootstrap.addBundle(new MultiPartBundle());
-
         bootstrap.setConfigurationSourceProvider(new ResourceConfigurationSourceProvider());
 
         // Enable variable substitution with environment variables
@@ -63,8 +63,10 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
 
         mongoManager.setConnectUri(configuration.getMongoDbUri());
 
+        environment.jersey().register(MultiPartFeature.class);
         environment.jersey().register(new UserResource());
         environment.jersey().register(new SettingsResource(this));
+        environment.jersey().register(new PostResource(this));
     }
 
     public MongoClient createClient() {

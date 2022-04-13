@@ -14,7 +14,7 @@ import io.dropwizard.jackson.Jackson;
 import keywhiz.hkdf.Hkdf;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
-import net.pistonmaster.pistonpost.api.JWTToken;
+import net.pistonmaster.pistonpost.utils.JWTToken;
 import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
