@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.api.PostResponse;
 import net.pistonmaster.pistonpost.storage.PostStorage;
+import net.pistonmaster.pistonpost.utils.MongoConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class TagResource {
             List<PostResponse> storageResponse = new ArrayList<>();
             for (PostStorage post : collection
                     .find(in("tags", tagName))
+                    .collation(MongoConstants.CASE_INSENSITIVE)
                     .sort(descending("_id"))
                     .limit(40)) {
                 if (!post.isUnlisted()) {

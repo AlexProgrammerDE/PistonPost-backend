@@ -68,10 +68,11 @@ public class PostResource {
 
         List<String> tagList = new ArrayList<>();
         for (String tag : tagArray) {
-            if (tag.length() > 20) {
+            String trimmedTag = tag.trim();
+            if (trimmedTag.length() > 20) {
                 throw new WebApplicationException("Tags must be less than 20 characters!", 400);
             }
-            tagList.add(tag.trim().replace(" ", "_"));
+            tagList.add(trimmedTag.replace("  ", ""));
         }
 
         boolean unlistedBool = Boolean.parseBoolean(unlisted);
