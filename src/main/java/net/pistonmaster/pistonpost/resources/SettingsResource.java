@@ -56,11 +56,15 @@ public class SettingsResource {
                     UserDataStorage newUserData = collection.find(newNameQuery).first();
 
                     if (newUserData != null) {
-                        throw new WebApplicationException("Username already taken", 409);
+                        throw new WebApplicationException("Username already taken!", 409);
                     }
 
                     userData.setName(name);
                 }
+
+                validateBio(bio);
+                validateWebsite(website);
+                validateLocation(location);
 
                 settings.setBio(bio);
                 settings.setWebsite(website);
@@ -83,6 +87,28 @@ public class SettingsResource {
 
             Bson query = eq("_id", user.getId());
             collection.deleteOne(query);
+        }
+    }
+
+    private void validateBio(String bio) {
+        if (bio != null && bio.length() > 255) {
+            throw new WebApplicationException("Your bio is too long!", 400);
+        }
+    }
+
+    private void validateWebsite(String website) {
+        if (website != null && website.length() > 80) {
+            throw new WebApplicationException("Your website is too long!", 400);
+        }
+
+        if (website != null && !website.startsWith("https://")) {
+            throw new WebApplicationException("Your website must start with \"https://\"!", 400);
+        }
+    }
+
+    private void validateLocation(String location) {
+        if (location != null && location.length() > 80) {
+            throw new WebApplicationException("Your location is too long!", 400);
         }
     }
 }
