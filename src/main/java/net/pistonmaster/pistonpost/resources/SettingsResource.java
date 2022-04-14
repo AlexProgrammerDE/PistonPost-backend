@@ -12,6 +12,7 @@ import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.storage.SettingsStorage;
 import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import org.bson.conversions.Bson;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -33,9 +34,9 @@ public class SettingsResource {
         }
     }
 
-    @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public void setSettings(@Auth User user, @FormParam("username") String username, @FormParam("bio") String bio, @FormParam("emailNotifications") String emailNotifications, @FormParam("theme") String theme) {
+    @PUT
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public void setSettings(@Auth User user, @FormDataParam("name") String name, @FormDataParam("bio") String bio, @FormDataParam("website") String website, @FormDataParam("location") String location, @FormDataParam("emailNotifications") String emailNotifications, @FormDataParam("theme") String theme) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
@@ -50,19 +51,21 @@ public class SettingsResource {
                     settings = new SettingsStorage();
                 }
 
-                if (!userData.getName().equals(username)) {
-                    Bson newNameQuery = eq("name", username);
+                if (!userData.getName().equals(name)) {
+                    Bson newNameQuery = eq("name", name);
                     UserDataStorage newUserData = collection.find(newNameQuery).first();
 
                     if (newUserData != null) {
                         throw new WebApplicationException("Username already taken", 409);
                     }
 
-                    userData.setName(username);
+                    userData.setName(name);
                 }
 
                 settings.setBio(bio);
-                settings.setEmailNotifications("on".equals(emailNotifications));
+                settings.setWebsite(website);
+                settings.setLocation(location);
+                settings.setEmailNotifications("true".equals(emailNotifications));
                 settings.setTheme(theme);
 
                 userData.setSettings(settings);

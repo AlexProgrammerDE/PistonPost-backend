@@ -11,4 +11,6 @@ public class SettingsStorage {
     private boolean emailNotifications;
     private String theme;
     private String bio;
+    private String website;
+    private String location;
 }
