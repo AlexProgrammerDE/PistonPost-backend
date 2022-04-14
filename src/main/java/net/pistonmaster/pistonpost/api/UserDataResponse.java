@@ -1,4 +1,4 @@
 package net.pistonmaster.pistonpost.api;
 
-public record UserDataResponse(String name, String avatar) {
+public record UserDataResponse(String id, String name, String avatar) {
 }

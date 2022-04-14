@@ -36,45 +36,16 @@ public class PostResource {
             throw new WebApplicationException("Your request is missing data!", 400);
         }
 
-        if (title.isBlank() || content.isBlank()) {
-            throw new WebApplicationException("Your request is missing data!", 400);
-        }
-
-        if (title.length() > 100) {
-            throw new WebApplicationException("Your title is too long!", 400);
-        }
-
-        if (content.length() > 1000) {
-            throw new WebApplicationException("Your content is too long!", 400);
-        }
-
-        if (tags.isBlank()) {
-            throw new WebApplicationException("You must have at least one tag!", 400);
-        }
+        validateTitle(title);
+        validateContent(content);
+        validateTags(tags);
 
         title = title.trim();
         content = content.trim();
         tags = tags.trim();
         unlisted = unlisted.trim();
 
-        String[] tagArray = tags.split(",");
-
-        if (tagArray.length > 5) {
-            throw new WebApplicationException("You can only have 5 tags!", 400);
-        }
-
-        if (tagArray.length == 0) {
-            throw new WebApplicationException("You must have at least one tag!", 400);
-        }
-
-        List<String> tagList = new ArrayList<>();
-        for (String tag : tagArray) {
-            String trimmedTag = tag.trim();
-            if (trimmedTag.length() > 20) {
-                throw new WebApplicationException("Tags must be less than 20 characters!", 400);
-            }
-            tagList.add(trimmedTag.replace("  ", ""));
-        }
+        List<String> tagList = parseTags(tags);
 
         boolean unlistedBool = Boolean.parseBoolean(unlisted);
 
@@ -138,5 +109,93 @@ public class PostResource {
 
             collection.deleteOne(query);
         }
+    }
+
+    @PUT
+    @Path("/{postId}")
+    public void editPost(@Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags) {
+        if (title == null || content == null || tags == null) {
+            throw new WebApplicationException("Your request is missing data!", 400);
+        }
+
+        validateTitle(title);
+        validateContent(content);
+        validateTags(tags);
+
+        title = title.trim();
+        content = content.trim();
+        tags = tags.trim();
+
+        List<String> tagList = parseTags(tags);
+
+        try (MongoClient mongoClient = application.createClient()) {
+            MongoDatabase database = mongoClient.getDatabase("pistonpost");
+            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+            Bson query = eq("postId", postId);
+            PostStorage post = collection.find(query).first();
+
+            if (post == null) {
+                throw new WebApplicationException("Post not found!", 404);
+            }
+
+            if (!post.getAuthor().toHexString().equals(user.getId().toHexString())) {
+                throw new WebApplicationException("You can only edit your own posts!", 403);
+            }
+
+            post.setTitle(title);
+            post.setContent(content);
+            post.setTags(tagList);
+
+            collection.replaceOne(query, post);
+        }
+    }
+
+    private void validateTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new WebApplicationException("Your request is missing data!", 400);
+        }
+
+        if (title.length() > 100) {
+            throw new WebApplicationException("Your title is too long!", 400);
+        }
+    }
+
+    private void validateContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new WebApplicationException("Your request is missing data!", 400);
+        }
+
+        if (content.length() > 1000) {
+            throw new WebApplicationException("Your content is too long!", 400);
+        }
+    }
+
+    private void validateTags(String tags) {
+        if (tags == null || tags.isBlank()) {
+            throw new WebApplicationException("You must have at least one tag!", 400);
+        }
+    }
+
+    private List<String> parseTags(String tags) {
+        String[] tagArray = tags.split(",");
+
+        if (tagArray.length > 5) {
+            throw new WebApplicationException("You can only have 5 tags!", 400);
+        }
+
+        if (tagArray.length == 0) {
+            throw new WebApplicationException("You must have at least one tag!", 400);
+        }
+
+        List<String> tagList = new ArrayList<>();
+        for (String tag : tagArray) {
+            String trimmedTag = tag.trim();
+            if (trimmedTag.length() > 20) {
+                throw new WebApplicationException("Tags must be less than 20 characters!", 400);
+            }
+            tagList.add(trimmedTag.replace("  ", ""));
+        }
+        return tagList;
     }
 }

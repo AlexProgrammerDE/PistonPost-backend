@@ -43,6 +43,6 @@ public class User implements Principal {
     }
 
     public UserDataResponse generateUserDataResponse() {
-        return new UserDataResponse(name, avatar);
+        return new UserDataResponse(id.toHexString(), name, avatar);
     }
 }
