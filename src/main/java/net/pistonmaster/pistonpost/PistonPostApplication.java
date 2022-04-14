@@ -13,7 +13,7 @@ import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
 import lombok.Getter;
-import net.pistonmaster.pistonpost.auth.AdminAuthorizer;
+import net.pistonmaster.pistonpost.auth.UserAuthorizer;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.resources.*;
 import net.pistonmaster.pistonpost.utils.PostFillerService;
@@ -56,7 +56,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         environment.jersey().register(new AuthDynamicFeature(
                 new OAuthCredentialAuthFilter.Builder<User>()
                         .setAuthenticator(new UserAuthenticator(this, configuration.getJwtTokenSecret()))
-                        .setAuthorizer(new AdminAuthorizer())
+                        .setAuthorizer(new UserAuthorizer())
                         .setPrefix("Bearer")
                         .buildAuthFilter()));
         environment.jersey().register(RolesAllowedDynamicFeature.class);

@@ -18,20 +18,12 @@ public class User implements Principal {
     private final String avatar;
     private final Set<String> roles;
 
-    public User(ObjectId id, String name, String email) {
-        this(
-                id,
-                name,
-                generateAvatar(email),
-                Set.of()
-        );
-    }
-
     public User(UserDataStorage userDataStorage) {
         this(
                 userDataStorage.getId(),
                 userDataStorage.getName(),
-                userDataStorage.getEmail()
+                generateAvatar(userDataStorage.getEmail()),
+                userDataStorage.getRoles() != null ? userDataStorage.getRoles() : Set.of()
         );
     }
 
@@ -43,6 +35,6 @@ public class User implements Principal {
     }
 
     public UserDataResponse generateUserDataResponse() {
-        return new UserDataResponse(id.toHexString(), name, avatar);
+        return new UserDataResponse(id.toHexString(), name, avatar, roles);
     }
 }

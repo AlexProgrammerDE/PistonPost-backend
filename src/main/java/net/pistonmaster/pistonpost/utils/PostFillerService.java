@@ -10,13 +10,18 @@ import net.pistonmaster.pistonpost.api.UserDataResponse;
 import net.pistonmaster.pistonpost.storage.PostStorage;
 import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+
+import java.util.Set;
 
 import static com.mongodb.client.model.Filters.eq;
 
 public record PostFillerService(PistonPostApplication application) {
     public static final UserDataResponse DELETED_ACCOUNT = new UserDataResponse(
+            new ObjectId().toHexString(),
             "Deleted Account",
-            "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"
+            "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+            Set.of()
     );
 
     public PostResponse fillPostStorage(PostStorage post) {
