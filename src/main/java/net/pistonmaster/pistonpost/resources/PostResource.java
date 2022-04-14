@@ -89,28 +89,6 @@ public class PostResource {
         }
     }
 
-    @DELETE
-    @Path("/{postId}")
-    public void deletePost(@Auth User user, @PathParam("postId") String postId) {
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
-
-            Bson query = eq("postId", postId);
-            PostStorage post = collection.find(query).first();
-
-            if (post == null) {
-                throw new WebApplicationException("Post not found!", 404);
-            }
-
-            if (!post.getAuthor().toHexString().equals(user.getId().toHexString())) {
-                throw new WebApplicationException("You can only delete your own posts!", 403);
-            }
-
-            collection.deleteOne(query);
-        }
-    }
-
     @PUT
     @Path("/{postId}")
     public void editPost(@Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags) {
@@ -148,6 +126,28 @@ public class PostResource {
             post.setTags(tagList);
 
             collection.replaceOne(query, post);
+        }
+    }
+
+    @DELETE
+    @Path("/{postId}")
+    public void deletePost(@Auth User user, @PathParam("postId") String postId) {
+        try (MongoClient mongoClient = application.createClient()) {
+            MongoDatabase database = mongoClient.getDatabase("pistonpost");
+            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+            Bson query = eq("postId", postId);
+            PostStorage post = collection.find(query).first();
+
+            if (post == null) {
+                throw new WebApplicationException("Post not found!", 404);
+            }
+
+            if (!post.getAuthor().toHexString().equals(user.getId().toHexString())) {
+                throw new WebApplicationException("You can only delete your own posts!", 403);
+            }
+
+            collection.deleteOne(query);
         }
     }
 
