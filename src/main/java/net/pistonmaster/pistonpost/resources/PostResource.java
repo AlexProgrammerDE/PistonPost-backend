@@ -13,6 +13,7 @@ import net.pistonmaster.pistonpost.api.PostCreateResponse;
 import net.pistonmaster.pistonpost.api.PostResponse;
 import net.pistonmaster.pistonpost.storage.PostStorage;
 import net.pistonmaster.pistonpost.utils.IDGenerator;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -88,7 +89,7 @@ public class PostResource {
                     postId,
                     title,
                     content,
-                    new ObjectId(user.getId()),
+                    user.getId(),
                     tagList,
                     timestamp,
                     unlistedBool
@@ -114,6 +115,28 @@ public class PostResource {
             }
 
             return application.getPostFillerService().fillPostStorage(post);
+        }
+    }
+
+    @DELETE
+    @Path("/{postId}")
+    public void deletePost(@Auth User user, @PathParam("postId") String postId) {
+        try (MongoClient mongoClient = application.createClient()) {
+            MongoDatabase database = mongoClient.getDatabase("pistonpost");
+            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+            Bson query = eq("postId", postId);
+            PostStorage post = collection.find(query).first();
+
+            if (post == null) {
+                throw new WebApplicationException("Post not found!", 404);
+            }
+
+            if (!post.getAuthor().toHexString().equals(user.getId().toHexString())) {
+                throw new WebApplicationException("You can only delete your own posts!", 403);
+            }
+
+            collection.deleteOne(query);
         }
     }
 }

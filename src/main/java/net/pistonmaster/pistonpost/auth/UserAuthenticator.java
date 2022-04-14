@@ -69,7 +69,7 @@ public class UserAuthenticator implements Authenticator<String, User> {
                         collection.replaceOne(query, storage, new ReplaceOptions().upsert(false));
                     }
 
-                    return Optional.of(new User(jwt.getSub(), storage.getName(), storage.getEmail()));
+                    return Optional.of(new User(new ObjectId(jwt.getSub()), storage.getName(), storage.getEmail()));
                 }
             }
 

@@ -12,7 +12,6 @@ import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.storage.SettingsStorage;
 import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -28,7 +27,7 @@ public class SettingsResource {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
-            Bson query = eq("_id", new ObjectId(user.getId()));
+            Bson query = eq("_id", user.getId());
 
             return collection.find(query).first();
         }
@@ -41,7 +40,7 @@ public class SettingsResource {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
-            Bson query = eq("_id", new ObjectId(user.getId()));
+            Bson query = eq("_id", user.getId());
             UserDataStorage userData = collection.find(query).first();
 
             if (userData != null) {
@@ -79,7 +78,7 @@ public class SettingsResource {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
-            Bson query = eq("_id", new ObjectId(user.getId()));
+            Bson query = eq("_id", user.getId());
             collection.deleteOne(query);
         }
     }

@@ -13,7 +13,6 @@ import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.api.PostResponse;
 import net.pistonmaster.pistonpost.storage.PostStorage;
-import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ public class PostsResource {
             MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
             List<PostResponse> storageResponse = new ArrayList<>();
-            for (PostStorage post : collection.find(eq("author", new ObjectId(user.getId()))).sort(descending("_id"))) {
+            for (PostStorage post : collection.find(eq("author", user.getId())).sort(descending("_id"))) {
                 storageResponse.add(application.getPostFillerService().fillPostStorage(post));
             }
 
