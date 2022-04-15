@@ -29,6 +29,7 @@ public class PostResource {
 
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
     public PostCreateResponse createPost(@Auth User user, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags, @FormDataParam("unlisted") String unlisted) {
         long timestamp = System.currentTimeMillis();
 
@@ -74,6 +75,7 @@ public class PostResource {
 
     @GET
     @Path("/{postId}")
+    @Produces(MediaType.APPLICATION_JSON)
     public PostResponse getPost(@PathParam("postId") String postId) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");

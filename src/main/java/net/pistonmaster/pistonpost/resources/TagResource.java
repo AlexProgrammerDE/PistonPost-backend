@@ -28,6 +28,7 @@ public class TagResource {
 
     @GET
     @Path("/{tagName}")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<PostResponse> getPost(@PathParam("tagName") String tagName) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
