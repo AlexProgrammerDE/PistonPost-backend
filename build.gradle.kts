@@ -1,5 +1,9 @@
 plugins {
-    java
+    application
+}
+
+application {
+    mainClass.set("net.pistonmaster.pistonpost.PistonPostApplication")
 }
 
 group = "net.pistonmaster"
