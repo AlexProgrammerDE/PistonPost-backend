@@ -37,6 +37,24 @@ public class SettingsResource {
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public void setSettings(@Auth User user, @FormDataParam("name") String name, @FormDataParam("bio") String bio, @FormDataParam("website") String website, @FormDataParam("location") String location, @FormDataParam("emailNotifications") String emailNotifications, @FormDataParam("theme") String theme) {
+        if (name != null)
+            name = name.trim();
+
+        if (bio != null)
+            bio = bio.trim();
+
+        if (website != null)
+            website = website.trim();
+
+        if (location != null)
+            location = location.trim();
+
+        if (emailNotifications != null)
+            emailNotifications = emailNotifications.trim();
+
+        if (theme != null)
+            theme = theme.trim();
+
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
@@ -121,7 +139,7 @@ public class SettingsResource {
             throw new WebApplicationException("Your website is too long!", 400);
         }
 
-        if (website != null && !website.startsWith("https://")) {
+        if (website != null && !website.isBlank() && !website.startsWith("https://")) {
             throw new WebApplicationException("Your website must start with \"https://\"!", 400);
         }
     }
