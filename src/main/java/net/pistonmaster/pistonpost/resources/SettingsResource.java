@@ -51,6 +51,8 @@ public class SettingsResource {
                     settings = new SettingsStorage();
                 }
 
+                validateName(name);
+
                 if (!userData.getName().equals(name)) {
                     Bson newNameQuery = eq("name", name);
                     UserDataStorage newUserData = collection.find(newNameQuery).first();
@@ -87,6 +89,24 @@ public class SettingsResource {
 
             Bson query = eq("_id", user.getId());
             collection.deleteOne(query);
+        }
+    }
+
+    private void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new WebApplicationException("Name cannot be empty!", 400);
+        }
+
+        if (name.length() > 20) {
+            throw new WebApplicationException("Name cannot be longer than 20 characters!", 400);
+        }
+
+        if (name.length() < 3) {
+            throw new WebApplicationException("Name must be at least 3 characters!", 400);
+        }
+
+        if (!name.matches("^\\w+$")) {
+            throw new WebApplicationException("Name can only contain letters, numbers, and underscores!", 400);
         }
     }
 
