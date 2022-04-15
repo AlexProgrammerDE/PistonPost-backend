@@ -16,17 +16,12 @@ import net.pistonmaster.pistonpost.api.UserPageResponse;
 import net.pistonmaster.pistonpost.storage.PostStorage;
 import net.pistonmaster.pistonpost.storage.SettingsStorage;
 import net.pistonmaster.pistonpost.storage.UserDataStorage;
-import net.pistonmaster.pistonpost.utils.MongoConstants;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Sorts.descending;
 
 @RequiredArgsConstructor
