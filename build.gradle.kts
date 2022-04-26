@@ -18,8 +18,8 @@ dependencies {
         implementation("io.dropwizard:dropwizard-$it:4.0.0-beta.1")
     }
 
-    compileOnly("org.projectlombok:lombok:1.18.22")
-    annotationProcessor("org.projectlombok:lombok:1.18.22")
+    compileOnly("org.projectlombok:lombok:1.18.24")
+    annotationProcessor("org.projectlombok:lombok:1.18.24")
 
     implementation("com.github.javafaker:javafaker:1.0.2") {
         exclude("org.yaml")
