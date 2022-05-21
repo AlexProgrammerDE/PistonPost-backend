@@ -5,6 +5,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class UserResource {
 
     @GET
     @Timed
-    public UserDataResponse userData(@Auth User user) {
+    public UserDataResponse userData(@Parameter(hidden = true) @Auth User user) {
         return user.generateUserDataResponse();
     }
 

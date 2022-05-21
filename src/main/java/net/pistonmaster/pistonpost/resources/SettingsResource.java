@@ -4,6 +4,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class SettingsResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public UserDataStorage getSettings(@Auth User user) {
+    public UserDataStorage getSettings(@Parameter(hidden = true) @Auth User user) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
@@ -36,7 +37,7 @@ public class SettingsResource {
 
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public void setSettings(@Auth User user, @FormDataParam("name") String name, @FormDataParam("bio") String bio, @FormDataParam("website") String website, @FormDataParam("location") String location, @FormDataParam("emailNotifications") String emailNotifications, @FormDataParam("theme") String theme) {
+    public void setSettings(@Parameter(hidden = true) @Auth User user, @FormDataParam("name") String name, @FormDataParam("bio") String bio, @FormDataParam("website") String website, @FormDataParam("location") String location, @FormDataParam("emailNotifications") String emailNotifications, @FormDataParam("theme") String theme) {
         if (name != null)
             name = name.trim();
 
@@ -100,7 +101,7 @@ public class SettingsResource {
     }
 
     @DELETE
-    public void deleteAccount(@Auth User user) {
+    public void deleteAccount(@Parameter(hidden = true) @Auth User user) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);

@@ -4,6 +4,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -27,7 +28,7 @@ public class HomeResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<PostResponse> getHomePosts(@Auth Optional<User> user) {
+    public List<PostResponse> getHomePosts(@Parameter(hidden = true) @Auth Optional<User> user) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);

@@ -1,6 +1,8 @@
 jwtTokenSecret: ${JWT_TOKEN_SECRET}
 mongoDbUri: ${MONGO_DB_URI}
 
+version: @projectVersion@
+
 # Database settings.
 #database:
 #

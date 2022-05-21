@@ -43,6 +43,14 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
+tasks {
+    processResources {
+        filter { line: String ->
+            line.replace("@projectVersion@", "${rootProject.version}")
+        }
+    }
+}
+
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }

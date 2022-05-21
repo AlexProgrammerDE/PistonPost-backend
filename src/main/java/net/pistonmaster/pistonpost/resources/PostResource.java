@@ -4,6 +4,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class PostResource {
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public PostCreateResponse createPost(@Auth User user, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags, @FormDataParam("unlisted") String unlisted) {
+    public PostCreateResponse createPost(@Parameter(hidden = true) @Auth User user, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags, @FormDataParam("unlisted") String unlisted) {
         long timestamp = System.currentTimeMillis();
 
         if (title == null || content == null || tags == null || unlisted == null) {
@@ -93,7 +94,7 @@ public class PostResource {
 
     @PUT
     @Path("/{postId}")
-    public void editPost(@Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags) {
+    public void editPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags) {
         if (title == null || content == null || tags == null) {
             throw new WebApplicationException("Your request is missing data!", 400);
         }
@@ -133,7 +134,7 @@ public class PostResource {
 
     @DELETE
     @Path("/{postId}")
-    public void deletePost(@Auth User user, @PathParam("postId") String postId) {
+    public void deletePost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
             MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);

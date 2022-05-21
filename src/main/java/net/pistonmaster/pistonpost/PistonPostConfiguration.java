@@ -11,14 +11,12 @@ public class PistonPostConfiguration extends Configuration {
     @NotEmpty
     private String mongoDbUri;
 
+    @NotEmpty
+    private String version;
+
     @JsonProperty
     public String getJwtTokenSecret() {
         return jwtTokenSecret;
-    }
-
-    @JsonProperty
-    public void setJwtTokenSecret(String jwtTokenSecret) {
-        this.jwtTokenSecret = jwtTokenSecret;
     }
 
     @JsonProperty
@@ -27,7 +25,7 @@ public class PistonPostConfiguration extends Configuration {
     }
 
     @JsonProperty
-    public void setMongoDbUri(String mongoDbUri) {
-        this.mongoDbUri = mongoDbUri;
+    public String getVersion() {
+        return version;
     }
 }

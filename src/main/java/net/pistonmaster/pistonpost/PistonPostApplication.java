@@ -83,6 +83,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         OpenAPI oas = new OpenAPI();
         Info info = new Info()
                 .title("PistonPost API")
+                .version(configuration.getVersion())
                 .description("Open source platform inspired by Reddit.")
                 .termsOfService("https://post.pistonmaster.net/terms")
                 .contact(new Contact().name("AlexProgrammerDE").url("https://pistonmaster.net"));
