@@ -12,12 +12,20 @@ import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
 import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.auth.UserAuthorizer;
 import net.pistonmaster.pistonpost.resources.*;
 import net.pistonmaster.pistonpost.utils.PostFillerService;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 public class PistonPostApplication extends Application<PistonPostConfiguration> {
@@ -71,6 +79,20 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         environment.jersey().register(new SettingsResource(this));
         environment.jersey().register(new PostsResource(this));
         environment.jersey().register(new PostResource(this));
+
+        OpenAPI oas = new OpenAPI();
+        Info info = new Info()
+                .title("PistonPost API")
+                .description("Open source platform inspired by Reddit.")
+                .termsOfService("https://post.pistonmaster.net/terms")
+                .contact(new Contact().name("AlexProgrammerDE").url("https://pistonmaster.net"));
+
+        oas.info(info);
+        SwaggerConfiguration oasConfig = new SwaggerConfiguration()
+                .openAPI(oas)
+                .prettyPrint(true)
+                .resourcePackages(Stream.of("net.pistonmaster.pistonpost").collect(Collectors.toSet()));
+        environment.jersey().register(new OpenApiResource().openApiConfiguration(oasConfig));
     }
 
     public MongoClient createClient() {

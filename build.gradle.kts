@@ -14,9 +14,13 @@ repositories {
 }
 
 dependencies {
-    setOf("core", "auth", "forms").forEach {
-        implementation("io.dropwizard:dropwizard-$it:4.0.0-beta.1")
-    }
+    implementation("io.swagger.core.v3:swagger-core-jakarta:2.2.0")
+    implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.0")
+    implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.0")
+
+    implementation("io.dropwizard:dropwizard-core:4.0.0-beta.1")
+    implementation("io.dropwizard:dropwizard-auth:4.0.0-beta.1")
+    implementation("io.dropwizard:dropwizard-forms:4.0.0-beta.1")
 
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
