@@ -14,9 +14,12 @@ import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
@@ -26,6 +29,7 @@ import net.pistonmaster.pistonpost.utils.PostFillerService;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -90,7 +94,16 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
                 .termsOfService("https://post.pistonmaster.net/terms")
                 .contact(new Contact().name("AlexProgrammerDE").url("https://pistonmaster.net"));
 
-
+        oas.components(new Components().securitySchemes(
+                Map.of(
+                        "bearerAuth",
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                )
+        ));
+        oas.security(List.of(new SecurityRequirement().addList("bearerAuth")));
         oas.info(info);
         oas.servers(List.of(new Server().url("https://post.pistonmaster.net/api/backend").description("Production backend")));
 
