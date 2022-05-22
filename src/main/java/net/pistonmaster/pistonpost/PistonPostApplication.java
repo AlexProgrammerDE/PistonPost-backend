@@ -21,7 +21,6 @@ import io.swagger.v3.oas.models.servers.Server;
 import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.auth.UserAuthorizer;
-import net.pistonmaster.pistonpost.filter.CORSResponseFilter;
 import net.pistonmaster.pistonpost.resources.*;
 import net.pistonmaster.pistonpost.utils.PostFillerService;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -100,7 +99,6 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
                 .prettyPrint(true)
                 .resourcePackages(Stream.of("net.pistonmaster.pistonpost").collect(Collectors.toSet()));
         environment.jersey().register(new OpenApiResource().openApiConfiguration(oasConfig));
-        environment.jersey().register(new CORSResponseFilter());
     }
 
     public MongoClient createClient() {
