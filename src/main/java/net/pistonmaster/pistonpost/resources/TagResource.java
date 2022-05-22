@@ -3,6 +3,7 @@ package net.pistonmaster.pistonpost.resources;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -29,6 +30,11 @@ public class TagResource {
     @GET
     @Path("/{tagName}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Get all posts that have a tag",
+            description = "Get all posts that have a tag. Does not include private ones.",
+            tags = {"tags"}
+    )
     public List<PostResponse> getPost(@PathParam("tagName") String tagName) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");

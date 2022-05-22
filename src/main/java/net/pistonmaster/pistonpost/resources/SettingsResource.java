@@ -4,6 +4,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -24,6 +25,11 @@ public class SettingsResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Get settings",
+            description = "Get settings",
+            tags = {"settings"}
+    )
     public UserDataStorage getSettings(@Parameter(hidden = true) @Auth User user) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
@@ -37,6 +43,11 @@ public class SettingsResource {
 
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Operation(
+            summary = "Update settings",
+            description = "Update settings",
+            tags = {"settings"}
+    )
     public void setSettings(@Parameter(hidden = true) @Auth User user, @FormDataParam("name") String name, @FormDataParam("bio") String bio, @FormDataParam("website") String website, @FormDataParam("location") String location, @FormDataParam("emailNotifications") String emailNotifications, @FormDataParam("theme") String theme) {
         if (name != null)
             name = name.trim();
@@ -101,6 +112,11 @@ public class SettingsResource {
     }
 
     @DELETE
+    @Operation(
+            summary = "Delete the user account",
+            description = "Delete the user account. The user should be logged out by the frontend after this operation as the api will no longer have any data associated to the account anymore.",
+            tags = {"settings"}
+    )
     public void deleteAccount(@Parameter(hidden = true) @Auth User user) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");

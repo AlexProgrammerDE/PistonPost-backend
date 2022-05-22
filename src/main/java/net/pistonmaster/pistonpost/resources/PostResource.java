@@ -4,6 +4,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -31,6 +32,11 @@ public class PostResource {
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Create a new post",
+            description = "Create a new post",
+            tags = {"post"}
+    )
     public PostCreateResponse createPost(@Parameter(hidden = true) @Auth User user, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags, @FormDataParam("unlisted") String unlisted) {
         long timestamp = System.currentTimeMillis();
 
@@ -77,6 +83,11 @@ public class PostResource {
     @GET
     @Path("/{postId}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Get a post",
+            description = "Get a post",
+            tags = {"post"}
+    )
     public PostResponse getPost(@PathParam("postId") String postId) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
@@ -94,6 +105,11 @@ public class PostResource {
 
     @PUT
     @Path("/{postId}")
+    @Operation(
+            summary = "Edit a post",
+            description = "Edit a post",
+            tags = {"post"}
+    )
     public void editPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags) {
         if (title == null || content == null || tags == null) {
             throw new WebApplicationException("Your request is missing data!", 400);
@@ -134,6 +150,11 @@ public class PostResource {
 
     @DELETE
     @Path("/{postId}")
+    @Operation(
+            summary = "Delete a post",
+            description = "Delete a post",
+            tags = {"post"}
+    )
     public void deletePost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");

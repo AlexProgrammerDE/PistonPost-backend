@@ -5,6 +5,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -40,6 +41,11 @@ public class UserResource {
     @GET
     @Path("/{name}")
     @Timed
+    @Operation(
+            summary = "Get public data of a user",
+            description = "Get public data of a user",
+            tags = {"user"}
+    )
     public UserPageResponse userData(@PathParam("name") String name) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
