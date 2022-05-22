@@ -33,17 +33,20 @@ public class UserResource {
     private final PistonPostApplication application;
 
     @GET
-    @Timed
+    @Operation(
+            summary = "Get public data of the current user",
+            description = "Get public data of the current user. The frontend uses this to display the user's name and avatar.",
+            tags = {"user"}
+    )
     public UserDataResponse userData(@Parameter(hidden = true) @Auth User user) {
         return user.generateUserDataResponse();
     }
 
     @GET
     @Path("/{name}")
-    @Timed
     @Operation(
             summary = "Get public data of a user",
-            description = "Get public data of a user",
+            description = "Get public data of a user. If the user is not found, a 404 is returned.",
             tags = {"user"}
     )
     public UserPageResponse userData(@PathParam("name") String name) {

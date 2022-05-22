@@ -27,7 +27,7 @@ public class SettingsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
             summary = "Get settings",
-            description = "Get settings",
+            description = "Get settings.",
             tags = {"settings"}
     )
     public UserDataStorage getSettings(@Parameter(hidden = true) @Auth User user) {
@@ -45,7 +45,7 @@ public class SettingsResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Operation(
             summary = "Update settings",
-            description = "Update settings",
+            description = "Update settings.",
             tags = {"settings"}
     )
     public void setSettings(@Parameter(hidden = true) @Auth User user, @FormDataParam("name") String name, @FormDataParam("bio") String bio, @FormDataParam("website") String website, @FormDataParam("location") String location, @FormDataParam("emailNotifications") String emailNotifications, @FormDataParam("theme") String theme) {
@@ -113,8 +113,8 @@ public class SettingsResource {
 
     @DELETE
     @Operation(
-            summary = "Delete the user account",
-            description = "Delete the user account. The user should be logged out by the frontend after this operation as the api will no longer have any data associated to the account anymore.",
+            summary = "Delete the current user account",
+            description = "Delete the current user account. The user should be logged out by the frontend after this operation as the api will no longer have any data associated to the account anymore.",
             tags = {"settings"}
     )
     public void deleteAccount(@Parameter(hidden = true) @Auth User user) {

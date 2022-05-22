@@ -31,7 +31,7 @@ public class PostsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
             summary = "Get all posts by the user",
-            description = "Get all posts by the user",
+            description = "Get all posts by the user.",
             tags = {"post"}
     )
     public List<PostResponse> getAccountPosts(@Parameter(hidden = true) @Auth User user) {

@@ -31,7 +31,7 @@ public class HomeResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
             summary = "Get posts for home page",
-            description = "Get posts for home page",
+            description = "Get posts for home page. Can be accessed without bearer token.",
             tags = {"post"}
     )
     public List<PostResponse> getHomePosts(@Parameter(hidden = true) @Auth Optional<User> user) {
