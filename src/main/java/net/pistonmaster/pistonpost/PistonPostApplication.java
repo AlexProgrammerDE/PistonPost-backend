@@ -17,13 +17,16 @@ import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
 import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.auth.UserAuthorizer;
+import net.pistonmaster.pistonpost.filter.CORSResponseFilter;
 import net.pistonmaster.pistonpost.resources.*;
 import net.pistonmaster.pistonpost.utils.PostFillerService;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,12 +91,16 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
                 .termsOfService("https://post.pistonmaster.net/terms")
                 .contact(new Contact().name("AlexProgrammerDE").url("https://pistonmaster.net"));
 
+
         oas.info(info);
+        oas.servers(List.of(new Server().url("https://post.pistonmaster.net/api/backend").description("Production backend")));
+
         SwaggerConfiguration oasConfig = new SwaggerConfiguration()
                 .openAPI(oas)
                 .prettyPrint(true)
                 .resourcePackages(Stream.of("net.pistonmaster.pistonpost").collect(Collectors.toSet()));
         environment.jersey().register(new OpenApiResource().openApiConfiguration(oasConfig));
+        environment.jersey().register(new CORSResponseFilter());
     }
 
     public MongoClient createClient() {
