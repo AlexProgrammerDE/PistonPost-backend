@@ -215,10 +215,16 @@ public class PostResource {
         List<String> tagList = new ArrayList<>();
         for (String tag : tagArray) {
             String trimmedTag = tag.trim();
+
             if (trimmedTag.length() > 20) {
                 throw new WebApplicationException("Tags must be less than 20 characters!", 400);
             }
-            tagList.add(trimmedTag.replace("  ", ""));
+
+            if (trimmedTag.matches("^[a-zA-Z\\d-._~]+$")) {
+                tagList.add(trimmedTag);
+            } else {
+                throw new WebApplicationException("Your tag contains invalid characters! (Allowed: a-z, A-Z, 0-9 and -._~)", 400);
+            }
         }
         return tagList;
     }
