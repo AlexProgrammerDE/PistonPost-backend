@@ -136,7 +136,8 @@ public class PostResource {
                 throw new WebApplicationException("Post not found!", 404);
             }
 
-            if (!post.getAuthor().toHexString().equals(user.getId().toHexString())) {
+            if (!user.getRoles().contains("ADMIN")
+                    && !post.getAuthor().toHexString().equals(user.getId().toHexString())) {
                 throw new WebApplicationException("You can only edit your own posts!", 403);
             }
 
@@ -167,7 +168,8 @@ public class PostResource {
                 throw new WebApplicationException("Post not found!", 404);
             }
 
-            if (!post.getAuthor().toHexString().equals(user.getId().toHexString())) {
+            if (!user.getRoles().contains("ADMIN")
+                    && !post.getAuthor().toHexString().equals(user.getId().toHexString())) {
                 throw new WebApplicationException("You can only delete your own posts!", 403);
             }
 
