@@ -26,6 +26,7 @@ import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.auth.UserAuthorizer;
 import net.pistonmaster.pistonpost.resources.*;
 import net.pistonmaster.pistonpost.utils.PostFillerService;
+import org.eclipse.jetty.servlets.DoSFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import java.util.List;
@@ -78,6 +79,8 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
 
         mongoManager.setConnectUri(configuration.getMongoDbUri());
+
+        environment.servlets().addFilter("DoSFilter", new DoSFilter());
 
         environment.jersey().register(new HomeResource(this));
         environment.jersey().register(new TagResource(this));
