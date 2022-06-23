@@ -12,6 +12,7 @@ import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.servlets.assets.AssetServlet;
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.Components;
@@ -24,8 +25,10 @@ import io.swagger.v3.oas.models.servers.Server;
 import lombok.Getter;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.auth.UserAuthorizer;
+import net.pistonmaster.pistonpost.manager.StaticFileManager;
 import net.pistonmaster.pistonpost.resources.*;
 import net.pistonmaster.pistonpost.utils.PostFillerService;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlets.DoSFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
@@ -52,6 +55,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
     @Override
     public void initialize(Bootstrap<PistonPostConfiguration> bootstrap) {
         bootstrap.addBundle(new MultiPartBundle());
+        bootstrap.addBundle(new AssetServlet("/assets/", "/", "index.html"));
 
         bootstrap.setConfigurationSourceProvider(new ResourceConfigurationSourceProvider());
 
@@ -87,7 +91,15 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         environment.jersey().register(new UserResource(this));
         environment.jersey().register(new SettingsResource(this));
         environment.jersey().register(new PostsResource(this));
-        environment.jersey().register(new PostResource(this));
+
+        StaticFileManager staticFileManager = new StaticFileManager(configuration.getStaticFilesPath(), this);
+        staticFileManager.init();
+        environment.jersey().register(new PostResource(this, staticFileManager));
+
+        ResourceHandler resourceHandler = new ResourceHandler();
+        resourceHandler.setDirAllowed(false);
+        resourceHandler.setResourceBase(configuration.getStaticFilesPath());
+        environment.jersey().register(resourceHandler);
 
         OpenAPI oas = new OpenAPI();
         Info info = new Info()

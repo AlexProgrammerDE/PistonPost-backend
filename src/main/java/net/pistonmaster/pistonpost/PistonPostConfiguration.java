@@ -14,6 +14,9 @@ public class PistonPostConfiguration extends Configuration {
     @NotEmpty
     private String version;
 
+    @NotEmpty
+    private String staticFilesPath;
+
     @JsonProperty
     public String getJwtTokenSecret() {
         return jwtTokenSecret;
@@ -27,5 +30,10 @@ public class PistonPostConfiguration extends Configuration {
     @JsonProperty
     public String getVersion() {
         return version;
+    }
+
+    @JsonProperty
+    public String getStaticFilesPath() {
+        return staticFilesPath;
     }
 }

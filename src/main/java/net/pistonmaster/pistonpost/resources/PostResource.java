@@ -13,13 +13,17 @@ import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.api.PostCreateResponse;
 import net.pistonmaster.pistonpost.api.PostResponse;
+import net.pistonmaster.pistonpost.manager.StaticFileManager;
 import net.pistonmaster.pistonpost.storage.PostStorage;
 import net.pistonmaster.pistonpost.utils.IDGenerator;
+import net.pistonmaster.pistonpost.utils.PostType;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +33,7 @@ import static com.mongodb.client.model.Filters.eq;
 @Path("/post")
 public class PostResource {
     private final PistonPostApplication application;
+    private final StaticFileManager staticFileManager;
 
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -38,21 +43,48 @@ public class PostResource {
             description = "Create a new post.",
             tags = {"post"}
     )
-    public PostCreateResponse createPost(@Parameter(hidden = true) @Auth User user, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags, @FormDataParam("unlisted") String unlisted) {
+    public PostCreateResponse createPost(@Parameter(hidden = true) @Auth User user, @FormDataParam("title") String title, @FormDataParam("type") PostType type, @FormDataParam("tags") String tags, @FormDataParam("unlisted") String unlisted, FormDataMultiPart multiPart) {
         long timestamp = System.currentTimeMillis();
 
-        if (title == null || content == null || tags == null || unlisted == null) {
+        if (title == null || type == null || tags == null || unlisted == null) {
             throw new WebApplicationException("Your request is missing data!", 400);
         }
 
         validateTitle(title);
-        validateContent(content);
         validateTags(tags);
 
         title = title.trim();
-        content = content.trim();
         tags = tags.trim();
         unlisted = unlisted.trim();
+
+        String content = null;
+        List<ObjectId> imageIds = new ArrayList<>();
+        ObjectId videoId = null;
+
+        switch (type) {
+            case TEXT -> {
+                content = multiPart.getField("content").getValue();
+                validateContent(content);
+                content = content.trim();
+            }
+            case IMAGES -> {
+                for (FormDataBodyPart body : multiPart.getFields("image")) {
+                    imageIds.add(staticFileManager.uploadImage(body.getValueAs(byte[].class), body.getContentDisposition()));
+                }
+                if (imageIds.isEmpty()) {
+                    throw new WebApplicationException("Your request is missing data!", 400);
+                }
+            }
+            case VIDEO -> {
+                FormDataBodyPart body = multiPart.getField("video");
+                if (body == null) {
+                    throw new WebApplicationException("Your request is missing data!", 400);
+                }
+                videoId = staticFileManager.uploadImage(body.getValueAs(byte[].class), body.getContentDisposition());
+            }
+        }
+
+        System.out.println(multiPart);
 
         List<String> tagList = parseTags(tags);
 
@@ -68,7 +100,10 @@ public class PostResource {
                     new ObjectId(),
                     postId,
                     title,
+                    type,
                     content,
+                    imageIds,
+                    videoId,
                     user.getId(),
                     tagList,
                     timestamp,
