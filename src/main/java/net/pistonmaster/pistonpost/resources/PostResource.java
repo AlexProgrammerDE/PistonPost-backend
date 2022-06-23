@@ -17,6 +17,7 @@ import net.pistonmaster.pistonpost.storage.PostStorage;
 import net.pistonmaster.pistonpost.utils.IDGenerator;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ public class PostResource {
             description = "Edit a post.",
             tags = {"post"}
     )
-    public void editPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags) {
+    public void editPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags, FormDataMultiPart multiPart) {
         if (title == null || content == null || tags == null) {
             throw new WebApplicationException("Your request is missing data!", 400);
         }

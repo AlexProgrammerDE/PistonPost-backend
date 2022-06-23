@@ -43,6 +43,12 @@ logging:
     org.hibernate.SQL:
       level: DEBUG
 
+    com.mongodb.driver.client:
+      level: WARN
+
+    com.mongodb.driver.connection:
+      level: WARN
+
   # Logback's Time Based Rolling Policy - archivedLogFilenamePattern: /tmp/application-%d{yyyy-MM-dd}.log.gz
   # Logback's Size and Time Based Rolling Policy -  archivedLogFilenamePattern: /tmp/application-%d{yyyy-MM-dd}-%i.log.gz
   # Logback's Fixed Window Rolling Policy -  archivedLogFilenamePattern: /tmp/application-%i.log.gz
