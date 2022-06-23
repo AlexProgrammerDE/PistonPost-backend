@@ -55,7 +55,6 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
     @Override
     public void initialize(Bootstrap<PistonPostConfiguration> bootstrap) {
         bootstrap.addBundle(new MultiPartBundle());
-        bootstrap.addBundle(new AssetServlet("/assets/", "/", "index.html"));
 
         bootstrap.setConfigurationSourceProvider(new ResourceConfigurationSourceProvider());
 
