@@ -10,6 +10,7 @@ import org.bson.types.ObjectId;
 @NoArgsConstructor
 public class ImageStorage {
     private ObjectId id;
+    private String extension;
     private int width;
     private int height;
 }

@@ -53,7 +53,7 @@ public record PostFillerService(PistonPostApplication application) {
                 }
                 for (ImageStorage image : imageStorage) {
                     if (image != null) {
-                        imageResponse.add(new ImageResponse(image.getId().toHexString(), image.getWidth(), image.getHeight()));
+                        imageResponse.add(new ImageResponse(image.getId().toHexString(), image.getExtension(), image.getWidth(), image.getHeight()));
                     }
                 }
             }
@@ -62,7 +62,7 @@ public record PostFillerService(PistonPostApplication application) {
                 MongoCollection<VideoStorage> videoCollection = database.getCollection("videos", VideoStorage.class);
                 VideoStorage video = videoCollection.find(eq("_id", post.getVideoId())).first();
                 if (video != null) {
-                    videoResponse = new VideoResponse(video.getId().toHexString(), video.getThumbnailId());
+                    videoResponse = new VideoResponse(video.getId().toHexString(), video.getExtension(), video.getThumbnailId());
                 }
             }
 

@@ -34,6 +34,7 @@ import static com.mongodb.client.model.Filters.eq;
 public class PostResource {
     private final PistonPostApplication application;
     private final StaticFileManager staticFileManager;
+    private static final int MAX_IMAGES = 20;
 
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -68,7 +69,11 @@ public class PostResource {
                 content = content.trim();
             }
             case IMAGES -> {
-                for (FormDataBodyPart body : multiPart.getFields("image")) {
+                List<FormDataBodyPart> imageParts = multiPart.getFields("image");
+                if (imageParts.size() > MAX_IMAGES) {
+                    throw new WebApplicationException("You can only upload a maximum of " + MAX_IMAGES + " images!", 400);
+                }
+                for (FormDataBodyPart body : imageParts) {
                     imageIds.add(staticFileManager.uploadImage(body.getValueAs(byte[].class), body.getContentDisposition()));
                 }
                 if (imageIds.isEmpty()) {
@@ -80,7 +85,7 @@ public class PostResource {
                 if (body == null) {
                     throw new WebApplicationException("Your request is missing data!", 400);
                 }
-                videoId = staticFileManager.uploadImage(body.getValueAs(byte[].class), body.getContentDisposition());
+                videoId = staticFileManager.uploadVideo(body.getValueAs(byte[].class), body.getContentDisposition());
             }
         }
 

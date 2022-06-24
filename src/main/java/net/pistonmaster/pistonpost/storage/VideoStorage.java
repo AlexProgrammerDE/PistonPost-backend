@@ -10,5 +10,6 @@ import org.bson.types.ObjectId;
 @NoArgsConstructor
 public class VideoStorage {
     private ObjectId id;
+    private String extension;
     private String thumbnailId;
 }
