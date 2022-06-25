@@ -22,7 +22,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
-    private static final List<String> ALLOWED_IMAGE_EXTENSION = List.of("png", "jpg", "jpeg", "webp", "gif");
+    private static final List<String> ALLOWED_IMAGE_EXTENSION = List.of("png", "jpg", "jpeg", "webp", "gif", "tiff", "bmp", "wbmp");
     private static final List<String> ALLOWED_VIDEO_EXTENSION = List.of("mp4", "mov", "webm", "mpeg", "mpg", "avi");
     private static final int MAX_IMAGE_SIZE_MB = 5;
     private static final int MAX_VIDEO_SIZE_MB = 50;

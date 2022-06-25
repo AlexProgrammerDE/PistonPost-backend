@@ -2,6 +2,7 @@ package net.pistonmaster.pistonpost;
 
 import com.github.javafaker.Faker;
 import com.mongodb.client.MongoClient;
+import com.twelvemonkeys.servlet.image.IIOProviderContextListener;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
@@ -83,6 +84,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
 
         mongoManager.setConnectUri(configuration.getMongoDbUri());
 
+        environment.servlets().addServletListeners(new IIOProviderContextListener());
         environment.servlets().addFilter("DoSFilter", new DoSFilter());
 
         environment.jersey().register(new HomeResource(this));

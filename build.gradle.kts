@@ -31,6 +31,10 @@ dependencies {
 
     implementation("commons-io:commons-io:2.11.0")
 
+    implementation("com.twelvemonkeys.servlet:servlet:3.8.2:jakarta@jar")
+    implementation("com.twelvemonkeys.imageio:imageio-bmp:3.8.2")
+    implementation("com.twelvemonkeys.imageio:imageio-webp:3.8.2")
+
     implementation("ws.schild:jave-all-deps:3.3.1")
 
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
