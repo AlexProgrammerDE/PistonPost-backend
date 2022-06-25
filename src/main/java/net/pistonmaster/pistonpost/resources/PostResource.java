@@ -23,7 +23,6 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +31,9 @@ import static com.mongodb.client.model.Filters.eq;
 @RequiredArgsConstructor
 @Path("/post")
 public class PostResource {
+    private static final int MAX_IMAGES = 20;
     private final PistonPostApplication application;
     private final StaticFileManager staticFileManager;
-    private static final int MAX_IMAGES = 20;
 
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)

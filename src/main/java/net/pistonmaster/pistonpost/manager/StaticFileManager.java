@@ -22,19 +22,24 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
-    private final Path imagesPath;
-    private final Path videosPath;
-    private final PistonPostApplication application;
     private static final List<String> ALLOWED_IMAGE_EXTENSION = List.of("png", "jpg", "jpeg", "webp", "gif");
     private static final List<String> ALLOWED_VIDEO_EXTENSION = List.of("mp4", "mov", "webm", "mpeg", "mpg", "avi");
     private static final int MAX_IMAGE_SIZE_MB = 5;
     private static final int MAX_VIDEO_SIZE_MB = 50;
+    private static final long MEGABYTE = 1024L * 1024L;
+    private final Path imagesPath;
+    private final Path videosPath;
+    private final PistonPostApplication application;
 
     public StaticFileManager(String staticFilesDir, PistonPostApplication application) {
         this.application = application;
         Path staticFilesPath = Path.of(staticFilesDir);
         this.imagesPath = staticFilesPath.resolve("images");
         this.videosPath = staticFilesPath.resolve("videos");
+    }
+
+    public static long bytesToMB(long bytes) {
+        return bytes / MEGABYTE;
     }
 
     public void init() {
@@ -100,11 +105,5 @@ public class StaticFileManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static final long MEGABYTE = 1024L * 1024L;
-
-    public static long bytesToMB(long bytes) {
-        return bytes / MEGABYTE;
     }
 }

@@ -28,7 +28,6 @@ import net.pistonmaster.pistonpost.manager.StaticFileManager;
 import net.pistonmaster.pistonpost.resources.*;
 import net.pistonmaster.pistonpost.servlets.FileAssetServlet;
 import net.pistonmaster.pistonpost.utils.PostFillerService;
-import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlets.DoSFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 

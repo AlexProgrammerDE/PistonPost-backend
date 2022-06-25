@@ -34,38 +34,11 @@ public class FileAssetServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 6393345594784987908L;
     private static final CharMatcher SLASHES = CharMatcher.is('/');
-
-    private static class CachedAsset {
-        private final byte[] resource;
-        private final String eTag;
-        private final long lastModifiedTime;
-
-        private CachedAsset(byte[] resource, long lastModifiedTime) {
-            this.resource = resource;
-            this.eTag = '"' + Hashing.murmur3_128().hashBytes(resource).toString() + '"';
-            this.lastModifiedTime = lastModifiedTime;
-        }
-
-        public byte[] getResource() {
-            return resource;
-        }
-
-        public String getETag() {
-            return eTag;
-        }
-
-        public long getLastModifiedTime() {
-            return lastModifiedTime;
-        }
-    }
-
     private static final MediaType DEFAULT_MEDIA_TYPE = MediaType.HTML_UTF_8;
-
     private final String resourcePath;
     private final String uriPath;
     private final String indexFile;
     private final Charset defaultCharset;
-
     /**
      * Creates a new {@code AssetServlet} that serves static assets loaded from {@code resourceURL}
      * (typically a file: or jar: URL). The assets are served at URIs rooted at {@code uriPath}. For
@@ -108,7 +81,7 @@ public class FileAssetServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req,
-                         HttpServletResponse resp) throws ServletException, IOException {
+                         HttpServletResponse resp) throws IOException {
         try {
             final StringBuilder builder = new StringBuilder(req.getServletPath());
             if (req.getPathInfo() != null) {
@@ -138,7 +111,8 @@ public class FileAssetServlet extends HttpServlet {
                     if (defaultCharset != null && mediaType.is(MediaType.ANY_TEXT_TYPE)) {
                         mediaType = mediaType.withCharset(defaultCharset);
                     }
-                } catch (IllegalArgumentException ignore) {}
+                } catch (IllegalArgumentException ignore) {
+                }
             }
 
             resp.setContentType(mediaType.type() + '/' + mediaType.subtype());
@@ -190,5 +164,29 @@ public class FileAssetServlet extends HttpServlet {
     private boolean isCachedClientSide(HttpServletRequest req, CachedAsset cachedAsset) {
         return cachedAsset.getETag().equals(req.getHeader(HttpHeaders.IF_NONE_MATCH)) ||
                 (req.getDateHeader(HttpHeaders.IF_MODIFIED_SINCE) >= cachedAsset.getLastModifiedTime());
+    }
+
+    private static class CachedAsset {
+        private final byte[] resource;
+        private final String eTag;
+        private final long lastModifiedTime;
+
+        private CachedAsset(byte[] resource, long lastModifiedTime) {
+            this.resource = resource;
+            this.eTag = '"' + Hashing.murmur3_128().hashBytes(resource).toString() + '"';
+            this.lastModifiedTime = lastModifiedTime;
+        }
+
+        public byte[] getResource() {
+            return resource;
+        }
+
+        public String getETag() {
+            return eTag;
+        }
+
+        public long getLastModifiedTime() {
+            return lastModifiedTime;
+        }
     }
 }

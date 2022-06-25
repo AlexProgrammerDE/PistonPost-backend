@@ -31,6 +31,8 @@ dependencies {
 
     implementation("commons-io:commons-io:2.11.0")
 
+    implementation("ws.schild:jave-all-deps:3.3.1")
+
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
     implementation("org.yaml:snakeyaml:1.30")
 
