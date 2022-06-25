@@ -66,11 +66,17 @@ public record PostFillerService(PistonPostApplication application) {
                 }
             }
 
+            PostType postType = post.getType();
+
+            if (postType == null && post.getContent() != null) {
+                postType = PostType.TEXT;
+            }
+
             return new PostResponse(
                     post.getPostId(),
                     post.getTitle(),
-                    post.getType(),
-                    post.getContent() != null ? post.getContent() : null,
+                    postType,
+                    post.getContent(),
                     imageResponse,
                     videoResponse,
                     post.getTags(),

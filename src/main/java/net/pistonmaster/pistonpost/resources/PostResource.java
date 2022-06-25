@@ -177,7 +177,7 @@ public class PostResource {
             }
 
             if (!user.getRoles().contains("ADMIN")
-                    && !post.getAuthor().toHexString().equals(user.getId().toHexString())) {
+                    && !post.getAuthor().equals(user.getId())) {
                 throw new WebApplicationException("You can only edit your own posts!", 403);
             }
 
@@ -225,7 +225,7 @@ public class PostResource {
             }
 
             if (!user.getRoles().contains("ADMIN")
-                    && !post.getAuthor().toHexString().equals(user.getId().toHexString())) {
+                    && !post.getAuthor().equals(user.getId())) {
                 throw new WebApplicationException("You can only delete your own posts!", 403);
             }
 
