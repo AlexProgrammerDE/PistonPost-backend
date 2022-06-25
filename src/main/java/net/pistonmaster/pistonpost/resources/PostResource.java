@@ -89,8 +89,6 @@ public class PostResource {
             }
         }
 
-        System.out.println(multiPart);
-
         List<String> tagList = parseTags(tags);
 
         boolean unlistedBool = Boolean.parseBoolean(unlisted);
@@ -151,18 +149,19 @@ public class PostResource {
             description = "Edit a post.",
             tags = {"post"}
     )
-    public void editPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("content") String content, @FormDataParam("tags") String tags, FormDataMultiPart multiPart) {
-        if (title == null || content == null || tags == null) {
+    public void editPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("title") String title, @FormDataParam("tags") String tags, @FormDataParam("unlisted") String unlisted, FormDataMultiPart multiPart) {
+        if (title == null || tags == null || unlisted == null) {
             throw new WebApplicationException("Your request is missing data!", 400);
         }
 
         validateTitle(title);
-        validateContent(content);
         validateTags(tags);
 
         title = title.trim();
-        content = content.trim();
         tags = tags.trim();
+        unlisted = unlisted.trim();
+
+        boolean unlistedBool = Boolean.parseBoolean(unlisted);
 
         List<String> tagList = parseTags(tags);
 
@@ -182,8 +181,24 @@ public class PostResource {
                 throw new WebApplicationException("You can only edit your own posts!", 403);
             }
 
+            String content = null;
+            switch (post.getType()) {
+                case TEXT -> {
+                    content = multiPart.getField("content").getValue();
+                    validateContent(content);
+                    content = content.trim();
+                }
+                case IMAGES, VIDEO -> {
+                }
+            }
+
             post.setTitle(title);
-            post.setContent(content);
+
+            if (content != null) {
+                post.setContent(content);
+            }
+
+            post.setUnlisted(unlistedBool);
             post.setTags(tagList);
 
             collection.replaceOne(query, post);
