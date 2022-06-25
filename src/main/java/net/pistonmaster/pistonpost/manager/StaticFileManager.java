@@ -26,7 +26,7 @@ public class StaticFileManager {
     private final Path videosPath;
     private final PistonPostApplication application;
     private static final List<String> ALLOWED_IMAGE_EXTENSION = List.of("png", "jpg", "jpeg", "webp", "gif");
-    private static final List<String> ALLOWED_VIDEO_EXTENSION = List.of("mp4");
+    private static final List<String> ALLOWED_VIDEO_EXTENSION = List.of("mp4", "mov", "webm", "mpeg", "mpg", "avi");
     private static final int MAX_IMAGE_SIZE_MB = 5;
     private static final int MAX_VIDEO_SIZE_MB = 50;
 
@@ -82,7 +82,7 @@ public class StaticFileManager {
         }
 
         ObjectId videoId = new ObjectId();
-        String fileExtension = FilenameUtils.getExtension(videoMetaData.getFileName());
+        String fileExtension = FilenameUtils.getExtension(videoMetaData.getFileName()).toLowerCase();
         if (!ALLOWED_VIDEO_EXTENSION.contains(fileExtension)) {
             throw new WebApplicationException("Invalid video extension!", 400);
         }
