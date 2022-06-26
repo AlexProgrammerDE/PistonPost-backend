@@ -349,8 +349,8 @@ public class PostResource {
     @DELETE
     @Path("/{postId}/comment/{commentId}")
     @Operation(
-            summary = "Add a comment to a post",
-            description = "Add a comment to a post.",
+            summary = "Delete a comment of a post",
+            description = "Delete a comment of a post.",
             tags = {"post"}
     )
     public void commentDelete(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @PathParam("commentId") String commentId) {
