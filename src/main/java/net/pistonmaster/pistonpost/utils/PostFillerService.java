@@ -5,14 +5,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.User;
-import net.pistonmaster.pistonpost.api.ImageResponse;
-import net.pistonmaster.pistonpost.api.PostResponse;
-import net.pistonmaster.pistonpost.api.UserDataResponse;
-import net.pistonmaster.pistonpost.api.VideoResponse;
-import net.pistonmaster.pistonpost.storage.ImageStorage;
-import net.pistonmaster.pistonpost.storage.PostStorage;
-import net.pistonmaster.pistonpost.storage.UserDataStorage;
-import net.pistonmaster.pistonpost.storage.VideoStorage;
+import net.pistonmaster.pistonpost.api.*;
+import net.pistonmaster.pistonpost.storage.*;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
@@ -33,13 +27,7 @@ public record PostFillerService(PistonPostApplication application) {
     public PostResponse fillPostStorage(PostStorage post) {
         try (MongoClient mongoClient = application.createClient()) {
             MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
-
-            Bson query = eq("_id", post.getAuthor());
-
-            UserDataStorage userData = collection.find(query).first();
-            UserDataResponse userDataResponse = userData == null ?
-                    DELETED_ACCOUNT : new User(userData).generateUserDataResponse();
+            UserDataResponse authorData = fillUserDataStorage(database, post.getAuthor());
 
             List<ImageResponse> imageResponse = null;
             VideoResponse videoResponse = null;
@@ -72,6 +60,18 @@ public record PostFillerService(PistonPostApplication application) {
                 postType = PostType.TEXT;
             }
 
+            List<CommentResponse> commentResponse = new ArrayList<>();
+
+            if (post.getComments() != null) {
+                MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
+                for (ObjectId commentId : post.getComments()) {
+                    CommentStorage comment = commentCollection.find(eq("_id", commentId)).first();
+                    if (comment != null) {
+                        commentResponse.add(new CommentResponse(comment.getId().toHexString(), comment.getContent(), fillUserDataStorage(database, comment.getAuthor())));
+                    }
+                }
+            }
+
             return new PostResponse(
                     post.getPostId(),
                     post.getTitle(),
@@ -80,10 +80,21 @@ public record PostFillerService(PistonPostApplication application) {
                     imageResponse,
                     videoResponse,
                     post.getTags(),
+                    commentResponse,
                     post.getTimestamp(),
                     post.isUnlisted(),
-                    userDataResponse
+                    authorData
             );
         }
+    }
+
+    public UserDataResponse fillUserDataStorage(MongoDatabase database, ObjectId user) {
+        MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
+
+        Bson query = eq("_id", user);
+
+        UserDataStorage userData = collection.find(query).first();
+        return userData == null ?
+                DELETED_ACCOUNT : new User(userData).generateUserDataResponse();
     }
 }

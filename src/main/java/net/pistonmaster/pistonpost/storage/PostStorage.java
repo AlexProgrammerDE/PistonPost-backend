@@ -21,6 +21,7 @@ public class PostStorage {
     private ObjectId videoId;
     private ObjectId author;
     private List<String> tags;
+    private List<ObjectId> comments;
     private long timestamp;
     private boolean unlisted;
 }

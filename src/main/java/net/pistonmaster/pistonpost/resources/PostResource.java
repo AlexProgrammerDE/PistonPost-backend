@@ -14,6 +14,7 @@ import net.pistonmaster.pistonpost.User;
 import net.pistonmaster.pistonpost.api.PostCreateResponse;
 import net.pistonmaster.pistonpost.api.PostResponse;
 import net.pistonmaster.pistonpost.manager.StaticFileManager;
+import net.pistonmaster.pistonpost.storage.CommentStorage;
 import net.pistonmaster.pistonpost.storage.PostStorage;
 import net.pistonmaster.pistonpost.utils.IDGenerator;
 import net.pistonmaster.pistonpost.utils.PostType;
@@ -108,6 +109,7 @@ public class PostResource {
                     videoId,
                     user.getId(),
                     tagList,
+                    List.of(),
                     timestamp,
                     unlistedBool
             );
@@ -252,6 +254,16 @@ public class PostResource {
         }
     }
 
+    private void validateComment(String content) {
+        if (content == null || content.isBlank()) {
+            throw new WebApplicationException("Your request is missing data!", 400);
+        }
+
+        if (content.length() > 100) {
+            throw new WebApplicationException("Your content is too long!", 400);
+        }
+    }
+
     private void validateTags(String tags) {
         if (tags == null || tags.isBlank()) {
             throw new WebApplicationException("You must have at least one tag!", 400);
@@ -284,5 +296,53 @@ public class PostResource {
             }
         }
         return tagList;
+    }
+
+    @PUT
+    @Path("/{postId}/comment")
+    @Operation(
+            summary = "Add a comment to a post",
+            description = "Add a comment to a post.",
+            tags = {"post"}
+    )
+    public void commentPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("content") String content) {
+        if (content == null) {
+            throw new WebApplicationException("Your request is missing data!", 400);
+        }
+
+        validateComment(content);
+
+        content = content.trim();
+
+        try (MongoClient mongoClient = application.createClient()) {
+            MongoDatabase database = mongoClient.getDatabase("pistonpost");
+            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+            Bson query = eq("postId", postId);
+            PostStorage post = collection.find(query).first();
+
+            if (post == null) {
+                throw new WebApplicationException("Post not found!", 404);
+            }
+
+            List<ObjectId> commentStorageList = post.getComments();
+
+            if (commentStorageList == null) {
+                commentStorageList = new ArrayList<>();
+            }
+
+            ObjectId commentId = new ObjectId();
+
+            CommentStorage commentStorage = new CommentStorage(commentId, content, user.getId());
+
+            MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
+
+            commentCollection.insertOne(commentStorage);
+
+            commentStorageList.add(commentId);
+            post.setComments(commentStorageList);
+
+            collection.replaceOne(query, post);
+        }
     }
 }
