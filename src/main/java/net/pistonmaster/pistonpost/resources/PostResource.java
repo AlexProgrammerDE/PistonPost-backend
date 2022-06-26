@@ -305,7 +305,7 @@ public class PostResource {
             description = "Add a comment to a post.",
             tags = {"post"}
     )
-    public void commentPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("content") String content) {
+    public void commentCreate(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @FormDataParam("content") String content) {
         if (content == null) {
             throw new WebApplicationException("Your request is missing data!", 400);
         }
@@ -343,6 +343,55 @@ public class PostResource {
             post.setComments(commentStorageList);
 
             collection.replaceOne(query, post);
+        }
+    }
+
+    @DELETE
+    @Path("/{postId}/comment/{commentId}")
+    @Operation(
+            summary = "Add a comment to a post",
+            description = "Add a comment to a post.",
+            tags = {"post"}
+    )
+    public void commentDelete(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @PathParam("commentId") String commentId) {
+        try (MongoClient mongoClient = application.createClient()) {
+            MongoDatabase database = mongoClient.getDatabase("pistonpost");
+
+            MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
+
+            ObjectId commentObjectId = new ObjectId(commentId);
+            Bson commentQuery = eq("_id", commentObjectId);
+            CommentStorage comment = commentCollection.find(commentQuery).first();
+
+            if (comment == null) {
+                throw new WebApplicationException("Comment not found!", 404);
+            }
+
+            if (!user.getRoles().contains("ADMIN")
+                    && !comment.getAuthor().equals(user.getId())) {
+                throw new WebApplicationException("You can only delete your own comments!", 403);
+            }
+
+            commentCollection.deleteOne(commentQuery);
+
+            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+            Bson postQuery = eq("postId", postId);
+            PostStorage post = collection.find(postQuery).first();
+
+            if (post == null) {
+                throw new WebApplicationException("Post not found!", 404);
+            }
+
+            List<ObjectId> commentStorageList = post.getComments();
+
+            if (commentStorageList == null) {
+                throw new WebApplicationException("Comment not found!", 404);
+            }
+
+            commentStorageList.remove(commentObjectId);
+
+            collection.replaceOne(postQuery, post);
         }
     }
 }
