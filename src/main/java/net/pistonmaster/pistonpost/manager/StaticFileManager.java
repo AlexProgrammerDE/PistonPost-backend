@@ -69,7 +69,7 @@ public class StaticFileManager {
 
         Path imagePath = imagesPath.resolve(imageId + "." + fileExtension);
         try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
-            ImageReader reader = ImageIO.getImageReadersByFormatName(fileExtension).next();
+            ImageReader reader = ImageIO.getImageReaders(in).next();
             reader.setInput(in, true, false);
             BufferedImage image = reader.read(0);
             IIOMetadata metadata = reader.getImageMetadata(0);
