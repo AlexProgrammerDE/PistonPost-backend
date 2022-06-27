@@ -11,6 +11,7 @@ version = "1.0.0"
 
 repositories {
     mavenCentral()
+    maven("https://repository.aspose.com/repo/")
 }
 
 dependencies {
@@ -32,8 +33,8 @@ dependencies {
     implementation("commons-io:commons-io:2.11.0")
 
     implementation("com.twelvemonkeys.servlet:servlet:3.8.2:jakarta@jar")
-    implementation("com.twelvemonkeys.imageio:imageio-bmp:3.8.2")
-    implementation("com.twelvemonkeys.imageio:imageio-webp:3.8.2")
+
+    implementation("com.aspose:aspose-imaging:22.6:jdk16@jar")
 
     implementation("ws.schild:jave-all-deps:3.3.1")
 
