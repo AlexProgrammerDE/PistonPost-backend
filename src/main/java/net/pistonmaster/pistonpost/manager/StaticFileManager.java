@@ -1,17 +1,6 @@
 package net.pistonmaster.pistonpost.manager;
 
-import com.aspose.imaging.ColorPaletteHelper;
-import com.aspose.imaging.Image;
-import com.aspose.imaging.ImageOptionsBase;
-import com.aspose.imaging.RasterImage;
-import com.aspose.imaging.fileformats.bmp.BitmapCompression;
-import com.aspose.imaging.fileformats.jpeg.JpegCompressionColorMode;
-import com.aspose.imaging.fileformats.jpeg.JpegCompressionMode;
-import com.aspose.imaging.fileformats.png.PngColorType;
-import com.aspose.imaging.fileformats.tiff.enums.TiffCompressions;
-import com.aspose.imaging.fileformats.tiff.enums.TiffExpectedFormat;
-import com.aspose.imaging.fileformats.tiff.enums.TiffPhotometrics;
-import com.aspose.imaging.imageoptions.*;
+import com.luciad.imageio.webp.WebPWriteParam;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -24,18 +13,21 @@ import org.apache.commons.io.FilenameUtils;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 
-import javax.imageio.ImageIO;
+import javax.imageio.*;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
-    private static final List<String> ALLOWED_IMAGE_EXTENSION = List.of("png", "jpg", "jpeg", "webp", "gif", "tiff", "bmp");
+    private static final List<String> ALLOWED_IMAGE_EXTENSION = List.of("png", "jpg", "jpeg", "webp", "gif", "tiff", "bmp", "wbmp");
     private static final List<String> ALLOWED_VIDEO_EXTENSION = List.of("mp4", "mov", "webm", "mpeg", "mpg", "avi");
     private static final int MAX_IMAGE_SIZE_MB = 5;
     private static final int MAX_VIDEO_SIZE_MB = 50;
@@ -76,70 +68,46 @@ public class StaticFileManager {
         }
 
         Path imagePath = imagesPath.resolve(imageId + "." + fileExtension);
-        try (Image image = Image.load(new ByteArrayInputStream(imageData))) {
-            ImageOptionsBase options = null;
-            switch (fileExtension) {
-                case "png" -> {
-                    PngOptions pngOptions = new PngOptions();
-                    pngOptions.setCompressionLevel(9);
-                    pngOptions.setProgressive(true);
-                    pngOptions.setColorType(PngColorType.IndexedColor);
-                    pngOptions.setPalette(ColorPaletteHelper.getCloseImagePalette((RasterImage) image, 1 << 5));
-                    options = pngOptions;
-                }
-                case "jpeg", "jpg" -> {
-                    JpegOptions jpegOptions = new JpegOptions();
-                    jpegOptions.setCompressionType(JpegCompressionMode.Progressive);
-                    jpegOptions.setColorType(JpegCompressionColorMode.YCbCr);
-                    jpegOptions.setQuality(75);
-                    options = jpegOptions;
-                }
-                case "webp" -> {
-                    WebPOptions webPOptions = new WebPOptions();
-                    webPOptions.setLossless(false);
-                    webPOptions.setQuality(50);
-                    options = webPOptions;
-                }
-                case "gif" -> {
-                    GifOptions gifOptions = new GifOptions();
-                    gifOptions.setPaletteSorted(false);
-                    gifOptions.setDoPaletteCorrection(false);
-                    gifOptions.setMaxDiff(500);
-                    gifOptions.setColorResolution((byte) 7);
-                    gifOptions.setPalette(ColorPaletteHelper.getCloseImagePalette((RasterImage) image, 1 << 8));
-                    options = gifOptions;
-                }
-                case "tiff" -> {
-                    TiffOptions tiffOptions = new TiffOptions(TiffExpectedFormat.Default);
-                    tiffOptions.setPhotometric(TiffPhotometrics.Ycbcr);
-                    tiffOptions.setCompression(TiffCompressions.Jpeg);
-                    tiffOptions.setBitsPerSample(new int[]{8, 8, 8});
-                    options = tiffOptions;
-                }
-                case "bmp" -> {
-                    BmpOptions bmpOptions = new BmpOptions();
-                    bmpOptions.setCompression(BitmapCompression.Rgb);
-                    bmpOptions.setBitsPerPixel(8);
-                    options = bmpOptions;
+        try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
+            ImageReader reader = ImageIO.getImageReadersByFormatName(fileExtension).next();
+            reader.setInput(in, true, false);
+            BufferedImage image = reader.read(0);
+            IIOMetadata metadata = reader.getImageMetadata(0);
+            reader.dispose();
+
+            if (fileExtension.equalsIgnoreCase("gif")) {
+                Files.write(imagePath, imageData);
+            } else {
+                try (ImageOutputStream out = ImageIO.createImageOutputStream(Files.newOutputStream(imagePath))) {
+                    ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(image);
+                    ImageWriter writer = ImageIO.getImageWriters(type, fileExtension).next();
+
+                    ImageWriteParam param = writer.getDefaultWriteParam();
+                    if (param.canWriteCompressed()) {
+                        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+
+                        if (param instanceof JPEGImageWriteParam jpegParam) {
+                            jpegParam.setOptimizeHuffmanTables(true);
+                        }
+
+                        if (param instanceof WebPWriteParam) {
+                            param.setCompressionType(param.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
+                        } else {
+                            param.setCompressionType(param.getCompressionTypes()[0]);
+                        }
+
+                        param.setCompressionQuality(1.0f);
+                    }
+
+                    writer.setOutput(out);
+                    writer.write(null, new IIOImage(image, null, metadata), param);
+                    writer.dispose();
                 }
             }
 
-            if (options == null) {
-                throw new WebApplicationException("Invalid image extension!", 400);
-            }
-
-            try (OutputStream outputStream = Files.newOutputStream(imagePath)) {
-                image.save(outputStream, options);
-            } catch (IOException e) {
-                throw new WebApplicationException("Could not save image", 500);
-            }
-        }
-
-        try {
             try (MongoClient mongoClient = application.createClient()) {
                 MongoDatabase mongoDatabase = mongoClient.getDatabase("pistonpost");
                 MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
-                BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageData));
                 int width = image.getWidth();
                 int height = image.getHeight();
                 ImageStorage imageStorage = new ImageStorage(imageId, fileExtension, width, height);

@@ -34,7 +34,7 @@ dependencies {
 
     implementation("com.twelvemonkeys.servlet:servlet:3.8.2:jakarta@jar")
 
-    implementation("com.aspose:aspose-imaging:22.6:jdk16@jar")
+    implementation("org.sejda.imageio:webp-imageio:0.1.6")
 
     implementation("ws.schild:jave-all-deps:3.3.1")
 
