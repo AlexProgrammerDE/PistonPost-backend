@@ -259,7 +259,7 @@ public class PostResource {
             throw new WebApplicationException("Your request is missing data!", 400);
         }
 
-        if (content.length() > 100) {
+        if (content.length() > 250) {
             throw new WebApplicationException("Your content is too long!", 400);
         }
     }
