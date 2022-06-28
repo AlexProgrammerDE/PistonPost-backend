@@ -7,6 +7,8 @@ import com.mongodb.client.MongoDatabase;
 import jakarta.ws.rs.WebApplicationException;
 import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
+import net.pistonmaster.pistonpost.gif.GifSequenceWriter;
+import net.pistonmaster.pistonpost.gif.ImageFrame;
 import net.pistonmaster.pistonpost.storage.ImageStorage;
 import net.pistonmaster.pistonpost.storage.VideoStorage;
 import org.apache.commons.io.FilenameUtils;
@@ -24,6 +26,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
+import static net.pistonmaster.pistonpost.gif.GifUtil.readGif;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
@@ -75,10 +79,20 @@ public class StaticFileManager {
             IIOMetadata metadata = reader.getImageMetadata(0);
             reader.dispose();
 
-            if (fileExtension.equalsIgnoreCase("gif")) {
-                Files.write(imagePath, imageData);
-            } else {
-                try (ImageOutputStream out = ImageIO.createImageOutputStream(Files.newOutputStream(imagePath))) {
+            try (ImageOutputStream out = ImageIO.createImageOutputStream(Files.newOutputStream(imagePath))) {
+                if (reader.getFormatName().equalsIgnoreCase("gif")) {
+                    ImageFrame[] frames = readGif(reader);
+                    GifSequenceWriter writer =
+                            new GifSequenceWriter(out, frames[0].getImage().getType(), frames[0].getDelay(), true, "PistonPost");
+
+                    writer.writeToSequence(frames[0].getImage());
+                    for (int i = 1; i < frames.length; i++) {
+                        BufferedImage nextImage = frames[i].getImage();
+                        writer.writeToSequence(nextImage);
+                    }
+
+                    writer.close();
+                } else {
                     ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(image);
                     ImageWriter writer = ImageIO.getImageWriters(type, fileExtension).next();
 
