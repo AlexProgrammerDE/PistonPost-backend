@@ -14,6 +14,11 @@ import net.pistonmaster.pistonpost.storage.VideoStorage;
 import org.apache.commons.io.FilenameUtils;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
+import ws.schild.jave.Encoder;
+import ws.schild.jave.EncoderException;
+import ws.schild.jave.MultimediaObject;
+import ws.schild.jave.encode.EncodingAttributes;
+import ws.schild.jave.encode.VideoAttributes;
 
 import javax.imageio.*;
 import javax.imageio.metadata.IIOMetadata;
@@ -26,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static net.pistonmaster.pistonpost.gif.GifUtil.readGif;
 
@@ -38,6 +44,7 @@ public class StaticFileManager {
     private static final long MEGABYTE = 1024L * 1024L;
     private final Path imagesPath;
     private final Path videosPath;
+    private final Path videoTempDir;
     private final PistonPostApplication application;
 
     public StaticFileManager(String staticFilesDir, PistonPostApplication application) {
@@ -45,6 +52,11 @@ public class StaticFileManager {
         Path staticFilesPath = Path.of(staticFilesDir);
         this.imagesPath = staticFilesPath.resolve("images");
         this.videosPath = staticFilesPath.resolve("videos");
+        try {
+            this.videoTempDir = Files.createTempDirectory("pistonpost-video-temp");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static long bytesToMB(long bytes) {
@@ -146,17 +158,34 @@ public class StaticFileManager {
             throw new WebApplicationException("Invalid video extension!", 400);
         }
         try {
-            Path imagePath = videosPath.resolve(videoId + "." + fileExtension);
-            Files.write(imagePath, videoData);
+            Path imageTempPath = videoTempDir.resolve(videoId + "-uncompressed." + fileExtension);
+            Path imagePath = videosPath.resolve(videoId + ".mp4");
+
+            Files.write(imageTempPath, videoData);
+
+            VideoAttributes video = new VideoAttributes();
+            video.setCodec("libx264");
+
+            EncodingAttributes attrs = new EncodingAttributes();
+            attrs.setInputFormat(fileExtension);
+            attrs.setOutputFormat("mp4");
+            attrs.setVideoAttributes(video);
+            attrs.setExtraContext(Map.of("crf", "20"));
+
+            Encoder encoder = new Encoder();
+            encoder.encode(new MultimediaObject(imageTempPath.toFile()), imagePath.toFile(), attrs);
+
+            Files.delete(imageTempPath);
+
             try (MongoClient mongoClient = application.createClient()) {
                 MongoDatabase mongoDatabase = mongoClient.getDatabase("pistonpost");
                 MongoCollection<VideoStorage> videos = mongoDatabase.getCollection("videos", VideoStorage.class);
-                VideoStorage videoStorage = new VideoStorage(videoId, fileExtension, null);
+                VideoStorage videoStorage = new VideoStorage(videoId, "mp4", null);
                 videos.insertOne(videoStorage);
             }
 
             return videoId;
-        } catch (IOException e) {
+        } catch (IOException | EncoderException e) {
             throw new RuntimeException(e);
         }
     }
