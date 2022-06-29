@@ -165,20 +165,19 @@ public class StaticFileManager {
             Files.write(imageTempPath, videoData);
 
             AudioAttributes audio = new AudioAttributes();
-            audio.setCodec("libmp3lame");
+            audio.setCodec("aac");
             audio.setBitRate(128000);
-            audio.setChannels(2);
-            audio.setSamplingRate(44100);
 
             VideoAttributes video = new VideoAttributes();
             video.setCodec("libx264");
+            video.setFaststart(true);
 
             EncodingAttributes attrs = new EncodingAttributes();
             attrs.setInputFormat(fileExtension);
             attrs.setOutputFormat("mp4");
             attrs.setAudioAttributes(audio);
             attrs.setVideoAttributes(video);
-            attrs.setExtraContext(Map.of("crf", "20"));
+            attrs.setExtraContext(Map.of("crf", "23", "preset", "superfast"));
 
             Encoder encoder = new Encoder();
             encoder.encode(new MultimediaObject(imageTempPath.toFile()), imagePath.toFile(), attrs);
