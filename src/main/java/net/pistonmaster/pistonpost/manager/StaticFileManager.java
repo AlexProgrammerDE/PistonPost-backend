@@ -17,6 +17,7 @@ import org.glassfish.jersey.media.multipart.ContentDisposition;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
+import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
 import ws.schild.jave.encode.VideoAttributes;
 
@@ -163,12 +164,19 @@ public class StaticFileManager {
 
             Files.write(imageTempPath, videoData);
 
+            AudioAttributes audio = new AudioAttributes();
+            audio.setCodec("libmp3lame");
+            audio.setBitRate(128000);
+            audio.setChannels(2);
+            audio.setSamplingRate(44100);
+
             VideoAttributes video = new VideoAttributes();
             video.setCodec("libx264");
 
             EncodingAttributes attrs = new EncodingAttributes();
             attrs.setInputFormat(fileExtension);
             attrs.setOutputFormat("mp4");
+            attrs.setAudioAttributes(audio);
             attrs.setVideoAttributes(video);
             attrs.setExtraContext(Map.of("crf", "20"));
 
