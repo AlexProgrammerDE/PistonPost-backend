@@ -1,6 +1,5 @@
 package net.pistonmaster.pistonpost.utils;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import net.pistonmaster.pistonpost.PistonPostApplication;
@@ -24,19 +23,17 @@ public record PostFillerService(PistonPostApplication application) {
             Set.of()
     );
 
-    public PostResponse fillPostStorage(PostStorage post) {
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            UserDataResponse authorData = fillUserDataStorage(database, post.getAuthor());
+    public PostResponse fillPostStorage(PostStorage post, MongoDatabase database) {
+        UserDataResponse authorData = fillUserDataStorage(database, post.getAuthor());
 
-            List<ImageResponse> imageResponse = null;
-            VideoResponse videoResponse = null;
+        List<ImageResponse> imageResponse = null;
+        VideoResponse videoResponse = null;
 
-            if (post.getImageIds() != null) {
-                imageResponse = new ArrayList<>();
-                List<ImageStorage> imageStorage = new ArrayList<>();
-                MongoCollection<ImageStorage> imageCollection = database.getCollection("images", ImageStorage.class);
-                for (ObjectId imageId : post.getImageIds()) {
+        if (post.getImageIds() != null) {
+            imageResponse = new ArrayList<>();
+            List<ImageStorage> imageStorage = new ArrayList<>();
+            MongoCollection<ImageStorage> imageCollection = database.getCollection("images", ImageStorage.class);
+            for (ObjectId imageId : post.getImageIds()) {
                     imageStorage.add(imageCollection.find(eq("_id", imageId)).first());
                 }
                 for (ImageStorage image : imageStorage) {
@@ -90,7 +87,6 @@ public record PostFillerService(PistonPostApplication application) {
                     authorData
             );
         }
-    }
 
     public UserDataResponse fillUserDataStorage(MongoDatabase database, ObjectId user) {
         MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);

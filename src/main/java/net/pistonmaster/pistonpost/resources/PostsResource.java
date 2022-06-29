@@ -41,7 +41,7 @@ public class PostsResource {
 
             List<PostResponse> storageResponse = new ArrayList<>();
             for (PostStorage post : collection.find(eq("author", user.getId())).sort(descending("_id"))) {
-                storageResponse.add(application.getPostFillerService().fillPostStorage(post));
+                storageResponse.add(application.getPostFillerService().fillPostStorage(post, database));
             }
 
             return storageResponse;

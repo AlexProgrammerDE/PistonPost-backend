@@ -42,7 +42,7 @@ public class HomeResource {
             List<PostResponse> storageResponse = new ArrayList<>();
             for (PostStorage post : collection.find().sort(descending("_id")).limit(40)) {
                 if (!post.isUnlisted()) {
-                    storageResponse.add(application.getPostFillerService().fillPostStorage(post));
+                    storageResponse.add(application.getPostFillerService().fillPostStorage(post, database));
                 }
             }
 

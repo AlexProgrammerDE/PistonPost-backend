@@ -139,7 +139,7 @@ public class PostResource {
                 throw new WebApplicationException("Post not found!", 404);
             }
 
-            return application.getPostFillerService().fillPostStorage(post);
+            return application.getPostFillerService().fillPostStorage(post, database);
         }
     }
 

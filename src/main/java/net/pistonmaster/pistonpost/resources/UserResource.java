@@ -68,7 +68,7 @@ public class UserResource {
                     .sort(descending("_id"))
                     .limit(20)) {
                 if (!post.isUnlisted()) {
-                    storageResponse.add(application.getPostFillerService().fillPostStorage(post));
+                    storageResponse.add(application.getPostFillerService().fillPostStorage(post, database));
                 }
             }
 
