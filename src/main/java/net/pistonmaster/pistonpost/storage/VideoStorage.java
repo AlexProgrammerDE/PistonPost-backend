@@ -11,5 +11,7 @@ import org.bson.types.ObjectId;
 public class VideoStorage {
     private ObjectId id;
     private String extension;
-    private String thumbnailId;
+    private ObjectId thumbnailId;
+    private int width;
+    private int height;
 }

@@ -50,7 +50,11 @@ public record PostFillerService(PistonPostApplication application) {
                 MongoCollection<VideoStorage> videoCollection = database.getCollection("videos", VideoStorage.class);
                 VideoStorage video = videoCollection.find(eq("_id", post.getVideoId())).first();
                 if (video != null) {
-                    videoResponse = new VideoResponse(video.getId().toHexString(), video.getExtension(), video.getThumbnailId());
+                    MongoCollection<ImageStorage> imageCollection = database.getCollection("images", ImageStorage.class);
+                    ImageStorage thumbnail = imageCollection.find(eq("_id", video.getThumbnailId())).first();
+                    if (thumbnail != null) {
+                        videoResponse = new VideoResponse(video.getId().toHexString(), video.getExtension(), new ImageResponse(thumbnail.getId().toHexString(), thumbnail.getExtension(), thumbnail.getWidth(), thumbnail.getHeight()), video.getWidth(), video.getHeight());
+                    }
                 }
             }
 

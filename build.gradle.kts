@@ -36,6 +36,8 @@ dependencies {
 
     implementation("org.sejda.imageio:webp-imageio:0.1.6")
 
+    implementation("org.jcodec:jcodec:0.2.5")
+    implementation("org.jcodec:jcodec-javase:0.2.5")
     implementation("ws.schild:jave-all-deps:3.3.1")
 
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml

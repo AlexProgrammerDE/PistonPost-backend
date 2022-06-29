@@ -14,6 +14,11 @@ import net.pistonmaster.pistonpost.storage.VideoStorage;
 import org.apache.commons.io.FilenameUtils;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
+import org.jcodec.api.FrameGrab;
+import org.jcodec.api.JCodecException;
+import org.jcodec.common.io.NIOUtils;
+import org.jcodec.common.model.Picture;
+import org.jcodec.scale.AWTUtil;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
@@ -158,11 +163,10 @@ public class StaticFileManager {
         if (!ALLOWED_VIDEO_EXTENSION.contains(fileExtension)) {
             throw new WebApplicationException("Invalid video extension!", 400);
         }
+        Path videoTempPath = videoTempDir.resolve(videoId + "-uncompressed." + fileExtension);
+        Path videoPath = videosPath.resolve(videoId + ".mp4");
         try {
-            Path imageTempPath = videoTempDir.resolve(videoId + "-uncompressed." + fileExtension);
-            Path imagePath = videosPath.resolve(videoId + ".mp4");
-
-            Files.write(imageTempPath, videoData);
+            Files.write(videoTempPath, videoData);
 
             AudioAttributes audio = new AudioAttributes();
             audio.setCodec("aac");
@@ -180,19 +184,67 @@ public class StaticFileManager {
             attrs.setExtraContext(Map.of("crf", "23", "preset", "superfast"));
 
             Encoder encoder = new Encoder();
-            encoder.encode(new MultimediaObject(imageTempPath.toFile()), imagePath.toFile(), attrs);
+            encoder.encode(new MultimediaObject(videoTempPath.toFile()), videoPath.toFile(), attrs);
 
-            Files.delete(imageTempPath);
+            Files.delete(videoTempPath);
+
+            ImageStorage videoThumbnail = generateThumbnail(videoPath);
 
             try (MongoClient mongoClient = application.createClient()) {
                 MongoDatabase mongoDatabase = mongoClient.getDatabase("pistonpost");
                 MongoCollection<VideoStorage> videos = mongoDatabase.getCollection("videos", VideoStorage.class);
-                VideoStorage videoStorage = new VideoStorage(videoId, "mp4", null);
+                VideoStorage videoStorage = new VideoStorage(videoId, "mp4", videoThumbnail.getId(), videoThumbnail.getWidth(), videoThumbnail.getHeight());
                 videos.insertOne(videoStorage);
             }
 
             return videoId;
         } catch (IOException | EncoderException e) {
+            try {
+                Files.deleteIfExists(videoTempPath);
+                Files.deleteIfExists(videoPath);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ImageStorage generateThumbnail(Path video) {
+        try {
+            ObjectId imageId = new ObjectId();
+            Path imagePath = imagesPath.resolve(imageId + ".png");
+
+            FrameGrab grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(video.toFile()));
+            grab.seekToFrameSloppy(0);
+
+            Picture picture = grab.getNativeFrame();
+            BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
+            try (ImageOutputStream out = ImageIO.createImageOutputStream(Files.newOutputStream(imagePath))) {
+                ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(bufferedImage);
+                ImageWriter writer = ImageIO.getImageWriters(type, "png").next();
+
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                if (param.canWriteCompressed()) {
+                    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                    param.setCompressionQuality(0.8f);
+                }
+
+                writer.setOutput(out);
+                writer.write(null, new IIOImage(bufferedImage, null, null), param);
+                writer.dispose();
+            }
+
+            try (MongoClient mongoClient = application.createClient()) {
+                MongoDatabase mongoDatabase = mongoClient.getDatabase("pistonpost");
+                MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
+                int width = bufferedImage.getWidth();
+                int height = bufferedImage.getHeight();
+                ImageStorage imageStorage = new ImageStorage(imageId, "png", width, height);
+                images.insertOne(imageStorage);
+                return imageStorage;
+            }
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
