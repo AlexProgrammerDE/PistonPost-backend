@@ -96,7 +96,7 @@ public class StaticFileManager {
             IIOMetadata metadata = reader.getImageMetadata(0);
             reader.dispose();
 
-            Path imagePath = imagesPath.resolve(imageId + "." + reader.getFormatName().toLowerCase());
+            Path imagePath = imagesPath.resolve(imageId + "." + fileExtension.toLowerCase());
 
             try (ImageOutputStream out = ImageIO.createImageOutputStream(Files.newOutputStream(imagePath))) {
                 if (reader.getFormatName().equalsIgnoreCase("gif")) {
@@ -143,7 +143,7 @@ public class StaticFileManager {
                 MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
                 int width = image.getWidth();
                 int height = image.getHeight();
-                ImageStorage imageStorage = new ImageStorage(imageId, fileExtension, width, height);
+                ImageStorage imageStorage = new ImageStorage(imageId, fileExtension.toLowerCase(), width, height);
                 images.insertOne(imageStorage);
             }
 
