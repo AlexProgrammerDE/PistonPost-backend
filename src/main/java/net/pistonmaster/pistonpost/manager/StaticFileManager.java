@@ -15,7 +15,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.jcodec.api.FrameGrab;
-import org.jcodec.api.JCodecException;
 import org.jcodec.common.io.NIOUtils;
 import org.jcodec.common.model.Picture;
 import org.jcodec.scale.AWTUtil;
@@ -36,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +90,24 @@ public class StaticFileManager {
         }
 
         try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
-            ImageReader reader = ImageIO.getImageReaders(in).next();
+            List<ImageReader> readers = new ArrayList<>();
+            ImageIO.getImageReaders(in).forEachRemaining(readers::add);
+            if (readers.isEmpty()) {
+                throw new WebApplicationException("Invalid image format!", 400);
+            }
+
+            ImageReader reader = null;
+            for (ImageReader reader2 : readers) {
+                if (reader2.toString().contains("twelvemonkeys")) {
+                    reader = reader2;
+                    break;
+                }
+            }
+
+            if (reader == null) {
+                reader = readers.get(0);
+            }
+
             reader.setInput(in, true, false);
             BufferedImage image = reader.read(0);
             IIOMetadata metadata = reader.getImageMetadata(0);
