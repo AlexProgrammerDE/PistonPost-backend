@@ -32,7 +32,7 @@ import static com.mongodb.client.model.Filters.eq;
 @RequiredArgsConstructor
 @Path("/post")
 public class PostResource {
-    private static final int MAX_IMAGES = 50;
+    private static final int MAX_IMAGES = 150;
     private final PistonPostApplication application;
     private final StaticFileManager staticFileManager;
 
