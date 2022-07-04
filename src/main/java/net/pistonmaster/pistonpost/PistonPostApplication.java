@@ -23,6 +23,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.Getter;
+import net.pistonmaster.pistonpost.auth.AuthCredentialFilter;
 import net.pistonmaster.pistonpost.auth.UserAuthenticator;
 import net.pistonmaster.pistonpost.auth.UserAuthorizer;
 import net.pistonmaster.pistonpost.manager.StaticFileManager;
@@ -74,7 +75,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         environment.healthChecks().register("MongoDB", mongoManager);
 
         environment.jersey().register(new AuthDynamicFeature(
-                new OAuthCredentialAuthFilter.Builder<User>()
+                new AuthCredentialFilter.Builder<User>()
                         .setAuthenticator(new UserAuthenticator(this, configuration.getJwtTokenSecret()))
                         .setAuthorizer(new UserAuthorizer())
                         .setPrefix("Bearer")
