@@ -106,7 +106,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
                 .title("PistonPost API")
                 .version(configuration.getVersion())
                 .description("Open source platform inspired by Reddit.")
-                .termsOfService("https://post.pistonmaster.net/terms")
+                .termsOfService("https://post.pistonmaster.net/tos")
                 .contact(new Contact().name("AlexProgrammerDE").url("https://pistonmaster.net"));
 
         oas.components(new Components().securitySchemes(
@@ -120,7 +120,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         ));
         oas.security(List.of(new SecurityRequirement().addList("bearerAuth")));
         oas.info(info);
-        oas.servers(List.of(new Server().url("https://post.pistonmaster.net/api/backend").description("Production backend")));
+        oas.servers(List.of(new Server().url("https://post.pistonmaster.net/backend").description("Production backend")));
 
         SwaggerConfiguration oasConfig = new SwaggerConfiguration()
                 .openAPI(oas)
