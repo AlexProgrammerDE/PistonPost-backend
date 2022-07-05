@@ -57,6 +57,8 @@ public class PostResource {
         tags = tags.trim();
         unlisted = unlisted.trim();
 
+        MongoDatabase database = application.getDatabase("pistonpost");
+
         String content = null;
         List<ObjectId> imageIds = new ArrayList<>();
         ObjectId videoId = null;
@@ -73,7 +75,7 @@ public class PostResource {
                     throw new WebApplicationException("You can only upload a maximum of " + MAX_IMAGES + " images!", 400);
                 }
                 for (FormDataBodyPart body : imageParts) {
-                    imageIds.add(staticFileManager.uploadImage(body.getValueAs(byte[].class), body.getContentDisposition()));
+                    imageIds.add(staticFileManager.uploadImage(database, body.getValueAs(byte[].class), body.getContentDisposition()));
                 }
                 if (imageIds.isEmpty()) {
                     throw new WebApplicationException("Your request is missing data!", 400);
@@ -84,7 +86,7 @@ public class PostResource {
                 if (body == null) {
                     throw new WebApplicationException("Your request is missing data!", 400);
                 }
-                videoId = staticFileManager.uploadVideo(body.getValueAs(byte[].class), body.getContentDisposition());
+                videoId = staticFileManager.uploadVideo(database, body.getValueAs(byte[].class), body.getContentDisposition());
             }
         }
 
@@ -94,7 +96,6 @@ public class PostResource {
 
         String postId = IDGenerator.generateID();
 
-        MongoDatabase database = application.getDatabase("pistonpost");
         MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
         PostStorage post = new PostStorage(

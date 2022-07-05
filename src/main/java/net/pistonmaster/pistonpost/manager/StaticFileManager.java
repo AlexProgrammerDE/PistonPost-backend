@@ -77,7 +77,7 @@ public class StaticFileManager {
         }
     }
 
-    public ObjectId uploadImage(byte[] imageData, ContentDisposition imageMetaData) {
+    public ObjectId uploadImage(MongoDatabase mongoDatabase, byte[] imageData, ContentDisposition imageMetaData) {
         if (bytesToMB(imageData.length) > MAX_IMAGE_SIZE_MB) {
             throw new WebApplicationException("Image is too big", 413);
         }
@@ -154,7 +154,6 @@ public class StaticFileManager {
                 }
             }
 
-            MongoDatabase mongoDatabase = application.getDatabase("pistonpost");
             MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
             int width = image.getWidth();
             int height = image.getHeight();
@@ -167,7 +166,7 @@ public class StaticFileManager {
         }
     }
 
-    public ObjectId uploadVideo(byte[] videoData, ContentDisposition videoMetaData) {
+    public ObjectId uploadVideo(MongoDatabase mongoDatabase, byte[] videoData, ContentDisposition videoMetaData) {
         if (bytesToMB(videoData.length) > MAX_VIDEO_SIZE_MB) {
             throw new WebApplicationException("Video is too big", 413);
         }
@@ -204,7 +203,6 @@ public class StaticFileManager {
 
             ImageStorage videoThumbnail = generateThumbnail(videoPath);
 
-            MongoDatabase mongoDatabase = application.getDatabase("pistonpost");
             MongoCollection<VideoStorage> videos = mongoDatabase.getCollection("videos", VideoStorage.class);
             VideoStorage videoStorage = new VideoStorage(videoId, "mp4", videoThumbnail.getId(), videoThumbnail.getWidth(), videoThumbnail.getHeight());
             videos.insertOne(videoStorage);
