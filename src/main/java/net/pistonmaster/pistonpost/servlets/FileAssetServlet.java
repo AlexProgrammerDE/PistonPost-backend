@@ -6,7 +6,6 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,6 +38,7 @@ public class FileAssetServlet extends HttpServlet {
     private final String uriPath;
     private final String indexFile;
     private final Charset defaultCharset;
+
     /**
      * Creates a new {@code AssetServlet} that serves static assets loaded from {@code resourceURL}
      * (typically a file: or jar: URL). The assets are served at URIs rooted at {@code uriPath}. For

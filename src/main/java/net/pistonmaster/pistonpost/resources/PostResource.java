@@ -1,6 +1,5 @@
 package net.pistonmaster.pistonpost.resources;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
@@ -95,29 +94,27 @@ public class PostResource {
 
         String postId = IDGenerator.generateID();
 
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
-            PostStorage post = new PostStorage(
-                    new ObjectId(),
-                    postId,
-                    title,
-                    type,
-                    content,
-                    imageIds,
-                    videoId,
-                    user.getId(),
-                    tagList,
-                    List.of(),
-                    timestamp,
-                    unlistedBool
-            );
+        PostStorage post = new PostStorage(
+                new ObjectId(),
+                postId,
+                title,
+                type,
+                content,
+                imageIds,
+                videoId,
+                user.getId(),
+                tagList,
+                List.of(),
+                timestamp,
+                unlistedBool
+        );
 
-            collection.insertOne(post);
+        collection.insertOne(post);
 
-            return new PostCreateResponse(postId);
-        }
+        return new PostCreateResponse(postId);
     }
 
     @GET
@@ -129,18 +126,16 @@ public class PostResource {
             tags = {"post"}
     )
     public PostResponse getPost(@PathParam("postId") String postId) {
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
-            PostStorage post = collection.find(eq("postId", postId)).first();
+        PostStorage post = collection.find(eq("postId", postId)).first();
 
-            if (post == null) {
-                throw new WebApplicationException("Post not found!", 404);
-            }
-
-            return application.getPostFillerService().fillPostStorage(post, database);
+        if (post == null) {
+            throw new WebApplicationException("Post not found!", 404);
         }
+
+        return application.getPostFillerService().fillPostStorage(post, database);
     }
 
     @PUT
@@ -166,44 +161,42 @@ public class PostResource {
 
         List<String> tagList = parseTags(tags);
 
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
-            Bson query = eq("postId", postId);
-            PostStorage post = collection.find(query).first();
+        Bson query = eq("postId", postId);
+        PostStorage post = collection.find(query).first();
 
-            if (post == null) {
-                throw new WebApplicationException("Post not found!", 404);
-            }
-
-            if (!user.getRoles().contains("ADMIN")
-                    && !post.getAuthor().equals(user.getId())) {
-                throw new WebApplicationException("You can only edit your own posts!", 403);
-            }
-
-            String content = null;
-            switch (post.getType()) {
-                case TEXT -> {
-                    content = multiPart.getField("content").getValue();
-                    validateContent(content);
-                    content = content.trim();
-                }
-                case IMAGES, VIDEO -> {
-                }
-            }
-
-            post.setTitle(title);
-
-            if (content != null) {
-                post.setContent(content);
-            }
-
-            post.setUnlisted(unlistedBool);
-            post.setTags(tagList);
-
-            collection.replaceOne(query, post);
+        if (post == null) {
+            throw new WebApplicationException("Post not found!", 404);
         }
+
+        if (!user.getRoles().contains("ADMIN")
+                && !post.getAuthor().equals(user.getId())) {
+            throw new WebApplicationException("You can only edit your own posts!", 403);
+        }
+
+        String content = null;
+        switch (post.getType()) {
+            case TEXT -> {
+                content = multiPart.getField("content").getValue();
+                validateContent(content);
+                content = content.trim();
+            }
+            case IMAGES, VIDEO -> {
+            }
+        }
+
+        post.setTitle(title);
+
+        if (content != null) {
+            post.setContent(content);
+        }
+
+        post.setUnlisted(unlistedBool);
+        post.setTags(tagList);
+
+        collection.replaceOne(query, post);
     }
 
     @DELETE
@@ -214,24 +207,22 @@ public class PostResource {
             tags = {"post"}
     )
     public void deletePost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId) {
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
-            Bson query = eq("postId", postId);
-            PostStorage post = collection.find(query).first();
+        Bson query = eq("postId", postId);
+        PostStorage post = collection.find(query).first();
 
-            if (post == null) {
-                throw new WebApplicationException("Post not found!", 404);
-            }
-
-            if (!user.getRoles().contains("ADMIN")
-                    && !post.getAuthor().equals(user.getId())) {
-                throw new WebApplicationException("You can only delete your own posts!", 403);
-            }
-
-            collection.deleteOne(query);
+        if (post == null) {
+            throw new WebApplicationException("Post not found!", 404);
         }
+
+        if (!user.getRoles().contains("ADMIN")
+                && !post.getAuthor().equals(user.getId())) {
+            throw new WebApplicationException("You can only delete your own posts!", 403);
+        }
+
+        collection.deleteOne(query);
     }
 
     private void validateTitle(String title) {
@@ -314,36 +305,34 @@ public class PostResource {
 
         content = content.trim();
 
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
-            Bson query = eq("postId", postId);
-            PostStorage post = collection.find(query).first();
+        Bson query = eq("postId", postId);
+        PostStorage post = collection.find(query).first();
 
-            if (post == null) {
-                throw new WebApplicationException("Post not found!", 404);
-            }
-
-            List<ObjectId> commentStorageList = post.getComments();
-
-            if (commentStorageList == null) {
-                commentStorageList = new ArrayList<>();
-            }
-
-            ObjectId commentId = new ObjectId();
-
-            CommentStorage commentStorage = new CommentStorage(commentId, content, user.getId());
-
-            MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
-
-            commentCollection.insertOne(commentStorage);
-
-            commentStorageList.add(commentId);
-            post.setComments(commentStorageList);
-
-            collection.replaceOne(query, post);
+        if (post == null) {
+            throw new WebApplicationException("Post not found!", 404);
         }
+
+        List<ObjectId> commentStorageList = post.getComments();
+
+        if (commentStorageList == null) {
+            commentStorageList = new ArrayList<>();
+        }
+
+        ObjectId commentId = new ObjectId();
+
+        CommentStorage commentStorage = new CommentStorage(commentId, content, user.getId());
+
+        MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
+
+        commentCollection.insertOne(commentStorage);
+
+        commentStorageList.add(commentId);
+        post.setComments(commentStorageList);
+
+        collection.replaceOne(query, post);
     }
 
     @DELETE
@@ -354,44 +343,42 @@ public class PostResource {
             tags = {"post"}
     )
     public void commentDelete(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @PathParam("commentId") String commentId) {
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
+        MongoDatabase database = application.getDatabase("pistonpost");
 
-            MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
+        MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
 
-            ObjectId commentObjectId = new ObjectId(commentId);
-            Bson commentQuery = eq("_id", commentObjectId);
-            CommentStorage comment = commentCollection.find(commentQuery).first();
+        ObjectId commentObjectId = new ObjectId(commentId);
+        Bson commentQuery = eq("_id", commentObjectId);
+        CommentStorage comment = commentCollection.find(commentQuery).first();
 
-            if (comment == null) {
-                throw new WebApplicationException("Comment not found!", 404);
-            }
-
-            if (!user.getRoles().contains("ADMIN")
-                    && !comment.getAuthor().equals(user.getId())) {
-                throw new WebApplicationException("You can only delete your own comments!", 403);
-            }
-
-            commentCollection.deleteOne(commentQuery);
-
-            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
-
-            Bson postQuery = eq("postId", postId);
-            PostStorage post = collection.find(postQuery).first();
-
-            if (post == null) {
-                throw new WebApplicationException("Post not found!", 404);
-            }
-
-            List<ObjectId> commentStorageList = post.getComments();
-
-            if (commentStorageList == null) {
-                throw new WebApplicationException("Comment not found!", 404);
-            }
-
-            commentStorageList.remove(commentObjectId);
-
-            collection.replaceOne(postQuery, post);
+        if (comment == null) {
+            throw new WebApplicationException("Comment not found!", 404);
         }
+
+        if (!user.getRoles().contains("ADMIN")
+                && !comment.getAuthor().equals(user.getId())) {
+            throw new WebApplicationException("You can only delete your own comments!", 403);
+        }
+
+        commentCollection.deleteOne(commentQuery);
+
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+        Bson postQuery = eq("postId", postId);
+        PostStorage post = collection.find(postQuery).first();
+
+        if (post == null) {
+            throw new WebApplicationException("Post not found!", 404);
+        }
+
+        List<ObjectId> commentStorageList = post.getComments();
+
+        if (commentStorageList == null) {
+            throw new WebApplicationException("Comment not found!", 404);
+        }
+
+        commentStorageList.remove(commentObjectId);
+
+        collection.replaceOne(postQuery, post);
     }
 }

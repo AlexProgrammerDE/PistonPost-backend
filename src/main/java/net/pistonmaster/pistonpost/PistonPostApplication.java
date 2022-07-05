@@ -1,11 +1,10 @@
 package net.pistonmaster.pistonpost;
 
 import com.github.javafaker.Faker;
-import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import com.twelvemonkeys.servlet.image.IIOProviderContextListener;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
-import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -129,7 +128,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         environment.jersey().register(new OpenApiResource().openApiConfiguration(oasConfig));
     }
 
-    public MongoClient createClient() {
-        return mongoManager.createClient();
+    public MongoDatabase getDatabase(String databaseName) {
+        return mongoManager.getDatabase(databaseName);
     }
 }

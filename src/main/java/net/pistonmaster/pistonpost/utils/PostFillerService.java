@@ -34,59 +34,59 @@ public record PostFillerService(PistonPostApplication application) {
             List<ImageStorage> imageStorage = new ArrayList<>();
             MongoCollection<ImageStorage> imageCollection = database.getCollection("images", ImageStorage.class);
             for (ObjectId imageId : post.getImageIds()) {
-                    imageStorage.add(imageCollection.find(eq("_id", imageId)).first());
-                }
-                for (ImageStorage image : imageStorage) {
-                    if (image != null) {
-                        imageResponse.add(new ImageResponse(image.getId().toHexString(), image.getExtension(), image.getWidth(), image.getHeight()));
-                    }
-                }
+                imageStorage.add(imageCollection.find(eq("_id", imageId)).first());
             }
-
-            if (post.getVideoId() != null) {
-                MongoCollection<VideoStorage> videoCollection = database.getCollection("videos", VideoStorage.class);
-                VideoStorage video = videoCollection.find(eq("_id", post.getVideoId())).first();
-                if (video != null) {
-                    MongoCollection<ImageStorage> imageCollection = database.getCollection("images", ImageStorage.class);
-                    ImageStorage thumbnail = imageCollection.find(eq("_id", video.getThumbnailId())).first();
-                    if (thumbnail != null) {
-                        videoResponse = new VideoResponse(video.getId().toHexString(), video.getExtension(), new ImageResponse(thumbnail.getId().toHexString(), thumbnail.getExtension(), thumbnail.getWidth(), thumbnail.getHeight()), video.getWidth(), video.getHeight());
-                    }
+            for (ImageStorage image : imageStorage) {
+                if (image != null) {
+                    imageResponse.add(new ImageResponse(image.getId().toHexString(), image.getExtension(), image.getWidth(), image.getHeight()));
                 }
             }
-
-            PostType postType = post.getType();
-
-            if (postType == null && post.getContent() != null) {
-                postType = PostType.TEXT;
-            }
-
-            List<CommentResponse> commentResponse = new ArrayList<>();
-
-            if (post.getComments() != null) {
-                MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
-                for (ObjectId commentId : post.getComments()) {
-                    CommentStorage comment = commentCollection.find(eq("_id", commentId)).first();
-                    if (comment != null) {
-                        commentResponse.add(new CommentResponse(comment.getId().toHexString(), comment.getContent(), fillUserDataStorage(database, comment.getAuthor())));
-                    }
-                }
-            }
-
-            return new PostResponse(
-                    post.getPostId(),
-                    post.getTitle(),
-                    postType,
-                    post.getContent(),
-                    imageResponse,
-                    videoResponse,
-                    post.getTags(),
-                    commentResponse,
-                    post.getTimestamp(),
-                    post.isUnlisted(),
-                    authorData
-            );
         }
+
+        if (post.getVideoId() != null) {
+            MongoCollection<VideoStorage> videoCollection = database.getCollection("videos", VideoStorage.class);
+            VideoStorage video = videoCollection.find(eq("_id", post.getVideoId())).first();
+            if (video != null) {
+                MongoCollection<ImageStorage> imageCollection = database.getCollection("images", ImageStorage.class);
+                ImageStorage thumbnail = imageCollection.find(eq("_id", video.getThumbnailId())).first();
+                if (thumbnail != null) {
+                    videoResponse = new VideoResponse(video.getId().toHexString(), video.getExtension(), new ImageResponse(thumbnail.getId().toHexString(), thumbnail.getExtension(), thumbnail.getWidth(), thumbnail.getHeight()), video.getWidth(), video.getHeight());
+                }
+            }
+        }
+
+        PostType postType = post.getType();
+
+        if (postType == null && post.getContent() != null) {
+            postType = PostType.TEXT;
+        }
+
+        List<CommentResponse> commentResponse = new ArrayList<>();
+
+        if (post.getComments() != null) {
+            MongoCollection<CommentStorage> commentCollection = database.getCollection("comments", CommentStorage.class);
+            for (ObjectId commentId : post.getComments()) {
+                CommentStorage comment = commentCollection.find(eq("_id", commentId)).first();
+                if (comment != null) {
+                    commentResponse.add(new CommentResponse(comment.getId().toHexString(), comment.getContent(), fillUserDataStorage(database, comment.getAuthor())));
+                }
+            }
+        }
+
+        return new PostResponse(
+                post.getPostId(),
+                post.getTitle(),
+                postType,
+                post.getContent(),
+                imageResponse,
+                videoResponse,
+                post.getTags(),
+                commentResponse,
+                post.getTimestamp(),
+                post.isUnlisted(),
+                authorData
+        );
+    }
 
     public UserDataResponse fillUserDataStorage(MongoDatabase database, ObjectId user) {
         MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);

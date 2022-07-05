@@ -1,6 +1,5 @@
 package net.pistonmaster.pistonpost.resources;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
@@ -31,14 +30,12 @@ public class SettingsResource {
             tags = {"settings"}
     )
     public UserDataStorage getSettings(@Parameter(hidden = true) @Auth User user) {
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
-            Bson query = eq("_id", user.getId());
+        Bson query = eq("_id", user.getId());
 
-            return collection.find(query).first();
-        }
+        return collection.find(query).first();
     }
 
     @PUT
@@ -67,47 +64,45 @@ public class SettingsResource {
         if (theme != null)
             theme = theme.trim();
 
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
-            Bson query = eq("_id", user.getId());
-            UserDataStorage userData = collection.find(query).first();
+        Bson query = eq("_id", user.getId());
+        UserDataStorage userData = collection.find(query).first();
 
-            if (userData != null) {
-                SettingsStorage settings = userData.getSettings();
+        if (userData != null) {
+            SettingsStorage settings = userData.getSettings();
 
-                if (settings == null) {
-                    settings = new SettingsStorage();
-                }
-
-                validateName(name);
-
-                if (!userData.getName().equals(name)) {
-                    Bson newNameQuery = eq("name", name);
-                    UserDataStorage newUserData = collection.find(newNameQuery).first();
-
-                    if (newUserData != null) {
-                        throw new WebApplicationException("Username already taken!", 409);
-                    }
-
-                    userData.setName(name);
-                }
-
-                validateBio(bio);
-                validateWebsite(website);
-                validateLocation(location);
-
-                settings.setBio(bio);
-                settings.setWebsite(website);
-                settings.setLocation(location);
-                settings.setEmailNotifications("true".equals(emailNotifications));
-                settings.setTheme(theme);
-
-                userData.setSettings(settings);
-
-                collection.replaceOne(query, userData);
+            if (settings == null) {
+                settings = new SettingsStorage();
             }
+
+            validateName(name);
+
+            if (!userData.getName().equals(name)) {
+                Bson newNameQuery = eq("name", name);
+                UserDataStorage newUserData = collection.find(newNameQuery).first();
+
+                if (newUserData != null) {
+                    throw new WebApplicationException("Username already taken!", 409);
+                }
+
+                userData.setName(name);
+            }
+
+            validateBio(bio);
+            validateWebsite(website);
+            validateLocation(location);
+
+            settings.setBio(bio);
+            settings.setWebsite(website);
+            settings.setLocation(location);
+            settings.setEmailNotifications("true".equals(emailNotifications));
+            settings.setTheme(theme);
+
+            userData.setSettings(settings);
+
+            collection.replaceOne(query, userData);
         }
     }
 
@@ -118,13 +113,11 @@ public class SettingsResource {
             tags = {"settings"}
     )
     public void deleteAccount(@Parameter(hidden = true) @Auth User user) {
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
-            Bson query = eq("_id", user.getId());
-            collection.deleteOne(query);
-        }
+        Bson query = eq("_id", user.getId());
+        collection.deleteOne(query);
     }
 
     private void validateName(String name) {

@@ -1,7 +1,6 @@
 package net.pistonmaster.pistonpost.manager;
 
 import com.luciad.imageio.webp.WebPWriteParam;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import jakarta.ws.rs.WebApplicationException;
@@ -155,14 +154,12 @@ public class StaticFileManager {
                 }
             }
 
-            try (MongoClient mongoClient = application.createClient()) {
-                MongoDatabase mongoDatabase = mongoClient.getDatabase("pistonpost");
-                MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
-                int width = image.getWidth();
-                int height = image.getHeight();
-                ImageStorage imageStorage = new ImageStorage(imageId, fileExtension.toLowerCase(), width, height);
-                images.insertOne(imageStorage);
-            }
+            MongoDatabase mongoDatabase = application.getDatabase("pistonpost");
+            MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
+            int width = image.getWidth();
+            int height = image.getHeight();
+            ImageStorage imageStorage = new ImageStorage(imageId, fileExtension.toLowerCase(), width, height);
+            images.insertOne(imageStorage);
 
             return imageId;
         } catch (IOException e) {
@@ -207,12 +204,10 @@ public class StaticFileManager {
 
             ImageStorage videoThumbnail = generateThumbnail(videoPath);
 
-            try (MongoClient mongoClient = application.createClient()) {
-                MongoDatabase mongoDatabase = mongoClient.getDatabase("pistonpost");
-                MongoCollection<VideoStorage> videos = mongoDatabase.getCollection("videos", VideoStorage.class);
-                VideoStorage videoStorage = new VideoStorage(videoId, "mp4", videoThumbnail.getId(), videoThumbnail.getWidth(), videoThumbnail.getHeight());
-                videos.insertOne(videoStorage);
-            }
+            MongoDatabase mongoDatabase = application.getDatabase("pistonpost");
+            MongoCollection<VideoStorage> videos = mongoDatabase.getCollection("videos", VideoStorage.class);
+            VideoStorage videoStorage = new VideoStorage(videoId, "mp4", videoThumbnail.getId(), videoThumbnail.getWidth(), videoThumbnail.getHeight());
+            videos.insertOne(videoStorage);
 
             return videoId;
         } catch (IOException | EncoderException e) {
@@ -252,15 +247,13 @@ public class StaticFileManager {
                 writer.dispose();
             }
 
-            try (MongoClient mongoClient = application.createClient()) {
-                MongoDatabase mongoDatabase = mongoClient.getDatabase("pistonpost");
-                MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
-                int width = bufferedImage.getWidth();
-                int height = bufferedImage.getHeight();
-                ImageStorage imageStorage = new ImageStorage(imageId, "png", width, height);
-                images.insertOne(imageStorage);
-                return imageStorage;
-            }
+            MongoDatabase mongoDatabase = application.getDatabase("pistonpost");
+            MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
+            ImageStorage imageStorage = new ImageStorage(imageId, "png", width, height);
+            images.insertOne(imageStorage);
+            return imageStorage;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

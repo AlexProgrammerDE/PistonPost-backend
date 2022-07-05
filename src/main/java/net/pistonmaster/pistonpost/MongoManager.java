@@ -26,9 +26,17 @@ public class MongoManager extends HealthCheck {
     private final CodecRegistry pojoCodecRegistry = fromRegistries(getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
     @Setter
     private String connectUri;
+    private MongoClient mongoClient;
 
-    public MongoClient createClient() {
-        return MongoClients.create(
+    public MongoDatabase getDatabase(String databaseName) {
+        if (mongoClient == null)
+            createInstance();
+
+        return mongoClient.getDatabase(databaseName);
+    }
+
+    private void createInstance() {
+        mongoClient = MongoClients.create(
                 MongoClientSettings.builder()
                         .applyConnectionString(new ConnectionString(connectUri))
                         .codecRegistry(pojoCodecRegistry)
@@ -38,15 +46,13 @@ public class MongoManager extends HealthCheck {
 
     @Override
     protected Result check() {
-        try (MongoClient mongoClient = createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("admin");
-            try {
-                Bson command = new BsonDocument("ping", new BsonInt64(1));
-                database.runCommand(command);
-                return Result.healthy("Connected successfully to server.");
-            } catch (MongoException me) {
-                return Result.unhealthy(me);
-            }
+        MongoDatabase database = getDatabase("admin");
+        try {
+            Bson command = new BsonDocument("ping", new BsonInt64(1));
+            database.runCommand(command);
+            return Result.healthy("Connected successfully to server.");
+        } catch (MongoException me) {
+            return Result.unhealthy(me);
         }
     }
 }

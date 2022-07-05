@@ -1,7 +1,6 @@
 package net.pistonmaster.pistonpost.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
@@ -50,27 +49,25 @@ public class UserAuthenticator implements Authenticator<String, User> {
 
             JWTToken jwt = Jackson.newObjectMapper().readValue(jweObject.getPayload().toString(), JWTToken.class);
 
-            try (MongoClient mongoClient = application.createClient()) {
-                MongoDatabase database = mongoClient.getDatabase("pistonpost");
-                MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
+            MongoDatabase database = application.getDatabase("pistonpost");
+            MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
 
-                Bson query = eq("_id", new ObjectId(jwt.getSub()));
-                UserDataStorage storage = collection.find(query).first();
+            Bson query = eq("_id", new ObjectId(jwt.getSub()));
+            UserDataStorage storage = collection.find(query).first();
 
-                if (storage != null) {
-                    if (storage.getName() == null) {
-                        String potentialName;
-                        do {
-                            potentialName = application.getFaker().funnyName().name().replace(" ", "");
-                        } while (potentialName.length() > 12);
+            if (storage != null) {
+                if (storage.getName() == null) {
+                    String potentialName;
+                    do {
+                        potentialName = application.getFaker().funnyName().name().replace(" ", "");
+                    } while (potentialName.length() > 12);
 
-                        storage.setName(potentialName);
+                    storage.setName(potentialName);
 
-                        collection.replaceOne(query, storage, new ReplaceOptions().upsert(false));
-                    }
-
-                    return Optional.of(new User(storage));
+                    collection.replaceOne(query, storage, new ReplaceOptions().upsert(false));
                 }
+
+                return Optional.of(new User(storage));
             }
 
             return Optional.empty();

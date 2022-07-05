@@ -1,7 +1,6 @@
 package net.pistonmaster.pistonpost.auth;
 
 import io.dropwizard.auth.AuthFilter;
-import io.dropwizard.auth.Authenticator;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;

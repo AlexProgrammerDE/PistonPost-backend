@@ -1,6 +1,5 @@
 package net.pistonmaster.pistonpost.resources;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
@@ -35,16 +34,14 @@ public class PostsResource {
             tags = {"post"}
     )
     public List<PostResponse> getAccountPosts(@Parameter(hidden = true) @Auth User user) {
-        try (MongoClient mongoClient = application.createClient()) {
-            MongoDatabase database = mongoClient.getDatabase("pistonpost");
-            MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
-            List<PostResponse> storageResponse = new ArrayList<>();
-            for (PostStorage post : collection.find(eq("author", user.getId())).sort(descending("_id"))) {
-                storageResponse.add(application.getPostFillerService().fillPostStorage(post, database));
-            }
-
-            return storageResponse;
+        List<PostResponse> storageResponse = new ArrayList<>();
+        for (PostStorage post : collection.find(eq("author", user.getId())).sort(descending("_id"))) {
+            storageResponse.add(application.getPostFillerService().fillPostStorage(post, database));
         }
+
+        return storageResponse;
     }
 }
