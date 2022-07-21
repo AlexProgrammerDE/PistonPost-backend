@@ -129,7 +129,7 @@ public class PostResource {
             description = "Get a post.",
             tags = {"post"}
     )
-    public PostResponse getPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId) {
+    public PostResponse getPost(@Parameter(hidden = true) @Auth Optional<User> user, @PathParam("postId") String postId) {
         MongoDatabase database = application.getDatabase("pistonpost");
         MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
@@ -140,7 +140,7 @@ public class PostResource {
         }
 
         System.out.println(user);
-        return application.getPostFillerService().fillPostStorage(user.getId(), post, database);
+        return application.getPostFillerService().fillPostStorage(user.map(User::getId).orElse(null), post, database);
     }
 
     @PUT
