@@ -19,6 +19,7 @@ import net.pistonmaster.pistonpost.storage.UserDataStorage;
 import org.bson.conversions.Bson;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -47,7 +48,7 @@ public class UserResource {
             description = "Get public data of a user. If the user is not found, a 404 is returned.",
             tags = {"user"}
     )
-    public UserPageResponse userData(@PathParam("name") String name) {
+    public UserPageResponse userData(@Parameter(hidden = true) @Auth Optional<User> user, @PathParam("name") String name) {
         MongoDatabase database = application.getDatabase("pistonpost");
         MongoCollection<UserDataStorage> collection = database.getCollection("users", UserDataStorage.class);
         MongoCollection<PostStorage> postCollection = database.getCollection("posts", PostStorage.class);
@@ -66,7 +67,7 @@ public class UserResource {
                 .sort(descending("_id"))
                 .limit(20)) {
             if (!post.isUnlisted()) {
-                storageResponse.add(application.getPostFillerService().fillPostStorage(post, database));
+                storageResponse.add(application.getPostFillerService().fillPostStorage(user.map(User::getId).orElse(null), post, database));
             }
         }
 

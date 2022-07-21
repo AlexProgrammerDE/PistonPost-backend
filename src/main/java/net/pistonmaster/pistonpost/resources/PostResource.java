@@ -17,14 +17,14 @@ import net.pistonmaster.pistonpost.storage.CommentStorage;
 import net.pistonmaster.pistonpost.storage.PostStorage;
 import net.pistonmaster.pistonpost.utils.IDGenerator;
 import net.pistonmaster.pistonpost.utils.PostType;
+import net.pistonmaster.pistonpost.utils.VoteType;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -109,6 +109,9 @@ public class PostResource {
                 user.getId(),
                 tagList,
                 List.of(),
+                Set.of(),
+                Set.of(),
+                Set.of(),
                 timestamp,
                 unlistedBool
         );
@@ -126,7 +129,7 @@ public class PostResource {
             description = "Get a post.",
             tags = {"post"}
     )
-    public PostResponse getPost(@PathParam("postId") String postId) {
+    public PostResponse getPost(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId) {
         MongoDatabase database = application.getDatabase("pistonpost");
         MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
@@ -136,7 +139,8 @@ public class PostResource {
             throw new WebApplicationException("Post not found!", 404);
         }
 
-        return application.getPostFillerService().fillPostStorage(post, database);
+        System.out.println(user);
+        return application.getPostFillerService().fillPostStorage(user.getId(), post, database);
     }
 
     @PUT
@@ -381,5 +385,91 @@ public class PostResource {
         commentStorageList.remove(commentObjectId);
 
         collection.replaceOne(postQuery, post);
+    }
+
+    @PUT
+    @Path("/{postId}/vote")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Put a vote for a post",
+            description = "Put a vote for a post.",
+            tags = {"post"}
+    )
+    public void putVote(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @QueryParam("type") VoteType type) {
+        if (type == null) {
+            throw new WebApplicationException("Your request is missing data!", 400);
+        }
+
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+        Bson query = eq("postId", postId);
+        PostStorage post = collection.find(query).first();
+
+        if (post == null) {
+            throw new WebApplicationException("Post not found!", 404);
+        }
+
+        Set<ObjectId> storageList = switch (type) {
+            case LIKE -> post.getLikes();
+            case DISLIKE -> post.getDislikes();
+            case HEART -> post.getHearts();
+        };
+
+        if (storageList == null) {
+            storageList = new HashSet<>();
+        }
+        storageList.add(user.getId());
+
+        switch (type) {
+            case LIKE -> post.setLikes(storageList);
+            case DISLIKE -> post.setDislikes(storageList);
+            case HEART -> post.setHearts(storageList);
+        }
+
+        collection.replaceOne(query, post);
+    }
+
+    @DELETE
+    @Path("/{postId}/vote")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Remove a vote of a post",
+            description = "Remove a vote of a post.",
+            tags = {"post"}
+    )
+    public void deleteVote(@Parameter(hidden = true) @Auth User user, @PathParam("postId") String postId, @QueryParam("type") VoteType type) {
+        if (type == null) {
+            throw new WebApplicationException("Your request is missing data!", 400);
+        }
+
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+        Bson query = eq("postId", postId);
+        PostStorage post = collection.find(query).first();
+
+        if (post == null) {
+            throw new WebApplicationException("Post not found!", 404);
+        }
+
+        Set<ObjectId> storageList = switch (type) {
+            case LIKE -> post.getLikes();
+            case DISLIKE -> post.getDislikes();
+            case HEART -> post.getHearts();
+        };
+
+        if (storageList == null) {
+            storageList = new HashSet<>();
+        }
+        storageList.remove(user.getId());
+
+        switch (type) {
+            case LIKE -> post.setLikes(storageList);
+            case DISLIKE -> post.setDislikes(storageList);
+            case HEART -> post.setHearts(storageList);
+        }
+
+        collection.replaceOne(query, post);
     }
 }

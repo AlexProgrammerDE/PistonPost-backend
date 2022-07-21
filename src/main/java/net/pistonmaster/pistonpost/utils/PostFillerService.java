@@ -23,7 +23,7 @@ public record PostFillerService(PistonPostApplication application) {
             Set.of()
     );
 
-    public PostResponse fillPostStorage(PostStorage post, MongoDatabase database) {
+    public PostResponse fillPostStorage(ObjectId currentUser, PostStorage post, MongoDatabase database) {
         UserDataResponse authorData = fillUserDataStorage(database, post.getAuthor());
 
         List<ImageResponse> imageResponse = null;
@@ -73,6 +73,17 @@ public record PostFillerService(PistonPostApplication application) {
             }
         }
 
+        if (post.getLikes() == null)
+            post.setLikes(Set.of());
+
+        if (post.getDislikes() == null)
+            post.setDislikes(Set.of());
+
+        if (post.getHearts() == null)
+            post.setHearts(Set.of());
+
+        System.out.println("Current user: " + currentUser);
+        System.out.println("Post: " + post.getLikes());
         return new PostResponse(
                 post.getPostId(),
                 post.getTitle(),
@@ -84,8 +95,15 @@ public record PostFillerService(PistonPostApplication application) {
                 commentResponse,
                 post.getTimestamp(),
                 post.isUnlisted(),
-                authorData
+                authorData,
+                new VoteResponse(post.getLikes().size(), checkVoted(currentUser, post.getLikes())),
+                new VoteResponse(post.getDislikes().size(), checkVoted(currentUser, post.getDislikes())),
+                new VoteResponse(post.getHearts().size(), checkVoted(currentUser, post.getHearts()))
         );
+    }
+
+    private boolean checkVoted(ObjectId currentUser, Set<ObjectId> list) {
+        return currentUser != null && list.stream().anyMatch(currentUser::equals);
     }
 
     public UserDataResponse fillUserDataStorage(MongoDatabase database, ObjectId user) {

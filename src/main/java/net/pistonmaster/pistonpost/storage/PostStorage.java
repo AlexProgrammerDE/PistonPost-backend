@@ -7,6 +7,7 @@ import net.pistonmaster.pistonpost.utils.PostType;
 import org.bson.types.ObjectId;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -22,6 +23,9 @@ public class PostStorage {
     private ObjectId author;
     private List<String> tags;
     private List<ObjectId> comments;
+    private Set<ObjectId> likes;
+    private Set<ObjectId> dislikes;
+    private Set<ObjectId> hearts;
     private long timestamp;
     private boolean unlisted;
 }
