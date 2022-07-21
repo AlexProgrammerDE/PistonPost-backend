@@ -128,8 +128,7 @@ public class StaticFileManager {
 
                     writer.close();
                 } else {
-                    ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(image);
-                    ImageWriter writer = ImageIO.getImageWriters(type, fileExtension).next();
+                    ImageWriter writer = ImageIO.getImageWriter(reader);
 
                     ImageWriteParam param = writer.getDefaultWriteParam();
                     if (param.canWriteCompressed()) {
