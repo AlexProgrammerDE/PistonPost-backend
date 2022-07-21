@@ -19,9 +19,9 @@ dependencies {
     implementation("io.dropwizard:dropwizard-auth:4.0.0-beta.2")
     implementation("io.dropwizard:dropwizard-forms:4.0.0-beta.2")
 
-    implementation("io.swagger.core.v3:swagger-core-jakarta:2.2.1")
-    implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.1")
-    implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.1")
+    implementation("io.swagger.core.v3:swagger-core-jakarta:2.2.2")
+    implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.2")
+    implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.2")
 
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
@@ -49,7 +49,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
     implementation("com.nimbusds:nimbus-jose-jwt:9.23")
 
-    implementation("org.mongodb:mongodb-driver-sync:4.6.1")
+    implementation("org.mongodb:mongodb-driver-sync:4.7.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
