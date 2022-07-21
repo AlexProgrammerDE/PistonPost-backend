@@ -82,8 +82,6 @@ public record PostFillerService(PistonPostApplication application) {
         if (post.getHearts() == null)
             post.setHearts(Set.of());
 
-        System.out.println("Current user: " + currentUser);
-        System.out.println("Post: " + post.getLikes());
         return new PostResponse(
                 post.getPostId(),
                 post.getTitle(),

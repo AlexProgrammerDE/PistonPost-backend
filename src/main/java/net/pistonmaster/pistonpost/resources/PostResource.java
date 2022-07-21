@@ -139,7 +139,6 @@ public class PostResource {
             throw new WebApplicationException("Post not found!", 404);
         }
 
-        System.out.println(user);
         return application.getPostFillerService().fillPostStorage(user.map(User::getId).orElse(null), post, database);
     }
 
