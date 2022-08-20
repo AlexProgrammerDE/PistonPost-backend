@@ -83,8 +83,8 @@ public class StaticFileManager {
             throw new WebApplicationException("Invalid image extension!", 400);
         }
 
-        Path imageTempPath = imageTempDir.resolve(imageId + "-uncompressed." + fileExtension);
-        Path imagePath = imagesPath.resolve(imageId + "." + fileExtension);
+        Path imageTempPath = imageTempDir.resolve(imageId + "-uncompressed." + fileExtension).toAbsolutePath();
+        Path imagePath = imagesPath.resolve(imageId + "." + fileExtension).toAbsolutePath();
         try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             List<ImageReader> readers = new ArrayList<>();
             ImageIO.getImageReaders(in).forEachRemaining(readers::add);
