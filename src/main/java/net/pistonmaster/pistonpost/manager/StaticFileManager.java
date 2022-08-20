@@ -123,7 +123,7 @@ public class StaticFileManager {
                 case "webp" ->
                         executeCommand("cwebp", "-q", "85", "-o", imagePath.toString(), imageTempPath.toString());
                 case "tiff", "bmp", "gif", "wbmp" ->
-                        executeCommand("convert", "-layers", "Optimize", "-fuzz", "7%", imageTempPath.toString(), imagePath.toString());
+                        executeCommand("convert", "-layers", "Optimize", "-fuzz", "2%", imageTempPath.toString(), imagePath.toString());
             }
 
             MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
