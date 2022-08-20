@@ -233,7 +233,7 @@ public class StaticFileManager {
         args[0] = findExecutableOnPath(args[0]);
         try {
             ProcessBuilder builder = new ProcessBuilder(args)
-                    .redirectError(ProcessBuilder.Redirect.INHERIT);
+                    .inheritIO();
             Process process = builder.start();
             process.waitFor();
         } catch (Exception e) {
