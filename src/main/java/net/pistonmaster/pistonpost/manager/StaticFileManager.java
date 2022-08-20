@@ -105,7 +105,8 @@ public class StaticFileManager {
             }
 
             reader.setInput(in, true, true);
-            BufferedImage image = reader.read(0);
+            int width = reader.getWidth(0);
+            int height = reader.getHeight(0);
             reader.dispose();
 
             Files.write(imageTempPath, imageData);
@@ -119,8 +120,6 @@ public class StaticFileManager {
             }
 
             MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
-            int width = image.getWidth();
-            int height = image.getHeight();
             ImageStorage imageStorage = new ImageStorage(imageId, fileExtension, width, height);
             images.insertOne(imageStorage);
 
