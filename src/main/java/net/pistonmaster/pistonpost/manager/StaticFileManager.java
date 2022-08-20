@@ -111,10 +111,12 @@ public class StaticFileManager {
 
             Files.write(imageTempPath, imageData);
 
+            System.out.println(imagePath);
+
             switch (fileExtension) {
                 case "png" -> executeCommand("optipng", "-o7", "-out", imagePath.toString(), imageTempPath.toString());
                 case "jpg", "jpeg" -> executeCommand("jpegoptim", "-m85", "--dest=" + imagePath, imageTempPath.toString());
-                case "webp" -> executeCommand("cwebp", "-q", "85", imageTempPath.toString(), "-o", imagePath.toString());
+                case "webp" -> executeCommand("cwebp", "-q", "85", "-o", imagePath.toString(), imageTempPath.toString());
                 case "tiff", "bmp", "gif", "wbmp" ->
                         executeCommand("convert", "-layers", "'optimize'", "-fuzz", "7%", imageTempPath.toString(), imagePath.toString());
             }
