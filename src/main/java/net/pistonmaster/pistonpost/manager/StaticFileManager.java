@@ -26,6 +26,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -229,10 +230,24 @@ public class StaticFileManager {
     }
 
     private void executeCommand(String... args) {
+        args[0] = findExecutableOnPath(args[0]);
         try {
-            Runtime.getRuntime().exec(args).waitFor();
+            ProcessBuilder builder = new ProcessBuilder(args)
+                    .redirectError(ProcessBuilder.Redirect.INHERIT);
+            Process process = builder.start();
+            process.waitFor();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String findExecutableOnPath(String name) {
+        for (String dirname : System.getenv("PATH").split(File.pathSeparator)) {
+            File file = new File(dirname, name);
+            if (file.isFile() && file.canExecute()) {
+                return file.getAbsolutePath();
+            }
+        }
+        throw new AssertionError("should have found the executable");
     }
 }
