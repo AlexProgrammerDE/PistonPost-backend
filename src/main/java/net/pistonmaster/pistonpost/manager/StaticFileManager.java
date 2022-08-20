@@ -73,12 +73,11 @@ public class StaticFileManager {
         }
     }
 
-    public ObjectId uploadImage(MongoDatabase mongoDatabase, byte[] imageData, ContentDisposition imageMetaData) {
+    public ObjectId uploadImage(ObjectId imageId, MongoDatabase mongoDatabase, byte[] imageData, ContentDisposition imageMetaData) {
         if (bytesToMB(imageData.length) > MAX_IMAGE_SIZE_MB) {
             throw new WebApplicationException("Image is too big", 413);
         }
 
-        ObjectId imageId = new ObjectId();
         String fileExtension = FilenameUtils.getExtension(imageMetaData.getFileName()).toLowerCase();
         if (!ALLOWED_IMAGE_EXTENSION.contains(fileExtension)) {
             throw new WebApplicationException("Invalid image extension!", 400);
@@ -111,8 +110,6 @@ public class StaticFileManager {
             reader.dispose();
 
             Files.write(imageTempPath, imageData);
-
-            System.out.println(imagePath);
 
             switch (fileExtension) {
                 case "png" -> executeCommand("optipng", "-o1", "-out", imagePath.toString(), imageTempPath.toString());

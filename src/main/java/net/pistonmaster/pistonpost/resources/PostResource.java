@@ -78,12 +78,13 @@ public class PostResource {
                 }
                 CountDownLatch latch = new CountDownLatch(imageParts.size());
                 for (FormDataBodyPart body : imageParts) {
+                    ObjectId imageId = new ObjectId();
+                    imageIds.add(imageId);
                     CompletableFuture.supplyAsync(() ->
-                                    staticFileManager.uploadImage(database, body.getValueAs(byte[].class), body.getContentDisposition()))
+                                    staticFileManager.uploadImage(imageId, database, body.getValueAs(byte[].class), body.getContentDisposition()))
                             .thenAccept(imagePath -> {
                                 latch.countDown();
                                 System.out.println("Uploaded image: " + imagePath);
-                                imageIds.add(imagePath);
                             }).exceptionally(throwable -> {
                                 latch.countDown();
                                 throwable.printStackTrace();
