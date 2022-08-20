@@ -25,6 +25,7 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -60,7 +61,7 @@ public class PostResource {
         MongoDatabase database = application.getDatabase("pistonpost");
 
         String content = null;
-        List<ObjectId> imageIds = new ArrayList<>();
+        List<ObjectId> imageIds = Collections.synchronizedList(new ArrayList<>());
         ObjectId videoId = null;
 
         switch (type) {
@@ -74,9 +75,19 @@ public class PostResource {
                 if (imageParts.size() > MAX_IMAGES) {
                     throw new WebApplicationException("You can only upload a maximum of " + MAX_IMAGES + " images!", 400);
                 }
+                List<CompletableFuture<Void>> imageUploads = new ArrayList<>();
                 for (FormDataBodyPart body : imageParts) {
-                    imageIds.add(staticFileManager.uploadImage(database, body.getValueAs(byte[].class), body.getContentDisposition()));
+                    imageUploads.add(CompletableFuture.supplyAsync(() ->
+                                    staticFileManager.uploadImage(database, body.getValueAs(byte[].class), body.getContentDisposition()))
+                            .thenAccept(imagePath -> {
+                                System.out.println("Uploaded image: " + imagePath);
+                                imageIds.add(imagePath);
+                            }).exceptionally(throwable -> {
+                                throwable.printStackTrace();
+                                throw new WebApplicationException(throwable.getMessage(), 500);
+                            }));
                 }
+                imageUploads.forEach(CompletableFuture::join);
                 if (imageIds.isEmpty()) {
                     throw new WebApplicationException("Your request is missing data!", 400);
                 }
