@@ -1,13 +1,10 @@
 package net.pistonmaster.pistonpost.manager;
 
-import com.luciad.imageio.webp.WebPWriteParam;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import jakarta.ws.rs.WebApplicationException;
 import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
-import net.pistonmaster.pistonpost.gif.GifSequenceWriter;
-import net.pistonmaster.pistonpost.gif.ImageFrame;
 import net.pistonmaster.pistonpost.storage.ImageStorage;
 import net.pistonmaster.pistonpost.storage.VideoStorage;
 import org.apache.commons.io.FilenameUtils;
@@ -25,8 +22,6 @@ import ws.schild.jave.encode.EncodingAttributes;
 import ws.schild.jave.encode.VideoAttributes;
 
 import javax.imageio.*;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
@@ -38,8 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static net.pistonmaster.pistonpost.gif.GifUtil.readGif;
-
 @RequiredArgsConstructor
 public class StaticFileManager {
     private static final List<String> ALLOWED_IMAGE_EXTENSION = List.of("png", "jpg", "jpeg", "webp", "gif", "tiff", "bmp", "wbmp");
@@ -49,6 +42,7 @@ public class StaticFileManager {
     private static final long MEGABYTE = 1024L * 1024L;
     private final Path imagesPath;
     private final Path videosPath;
+    private final Path imageTempDir;
     private final Path videoTempDir;
     private final PistonPostApplication application;
 
@@ -58,6 +52,7 @@ public class StaticFileManager {
         this.imagesPath = staticFilesPath.resolve("images");
         this.videosPath = staticFilesPath.resolve("videos");
         try {
+            this.imageTempDir = Files.createTempDirectory("pistonpost-image-temp");
             this.videoTempDir = Files.createTempDirectory("pistonpost-video-temp");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -83,11 +78,13 @@ public class StaticFileManager {
         }
 
         ObjectId imageId = new ObjectId();
-        String fileExtension = FilenameUtils.getExtension(imageMetaData.getFileName());
+        String fileExtension = FilenameUtils.getExtension(imageMetaData.getFileName()).toLowerCase();
         if (!ALLOWED_IMAGE_EXTENSION.contains(fileExtension)) {
             throw new WebApplicationException("Invalid image extension!", 400);
         }
 
+        Path imageTempPath = imageTempDir.resolve(imageId + "-uncompressed." + fileExtension);
+        Path imagePath = imagesPath.resolve(imageId + "." + fileExtension);
         try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             List<ImageReader> readers = new ArrayList<>();
             ImageIO.getImageReaders(in).forEachRemaining(readers::add);
@@ -107,60 +104,34 @@ public class StaticFileManager {
                 reader = readers.get(0);
             }
 
-            reader.setInput(in, true, false);
+            reader.setInput(in, true, true);
             BufferedImage image = reader.read(0);
-            IIOMetadata metadata = reader.getImageMetadata(0);
             reader.dispose();
 
-            Path imagePath = imagesPath.resolve(imageId + "." + fileExtension.toLowerCase());
+            Files.write(imageTempPath, imageData);
 
-            try (ImageOutputStream out = ImageIO.createImageOutputStream(Files.newOutputStream(imagePath))) {
-                if (reader.getFormatName().equalsIgnoreCase("gif")) {
-                    ImageFrame[] frames = readGif(reader);
-                    GifSequenceWriter writer =
-                            new GifSequenceWriter(out, frames[0].getImage().getType(), frames[0].getDelay(), true, "PistonPost");
-
-                    writer.writeToSequence(frames[0].getImage());
-                    for (int i = 1; i < frames.length; i++) {
-                        BufferedImage nextImage = frames[i].getImage();
-                        writer.writeToSequence(nextImage);
-                    }
-
-                    writer.close();
-                } else {
-                    ImageWriter writer = ImageIO.getImageWriter(reader);
-
-                    ImageWriteParam param = writer.getDefaultWriteParam();
-                    if (param.canWriteCompressed()) {
-                        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-
-                        if (param instanceof JPEGImageWriteParam jpegParam) {
-                            jpegParam.setOptimizeHuffmanTables(true);
-                        }
-
-                        if (param instanceof WebPWriteParam) {
-                            param.setCompressionType(param.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
-                        } else {
-                            param.setCompressionType(param.getCompressionTypes()[0]);
-                        }
-
-                        param.setCompressionQuality(1.0f);
-                    }
-
-                    writer.setOutput(out);
-                    writer.write(null, new IIOImage(image, null, metadata), param);
-                    writer.dispose();
-                }
+            switch (fileExtension) {
+                case "png" -> executeCommand("optipng", "-o7", "-out", imagePath.toString(), imageTempPath.toString());
+                case "jpg", "jpeg" -> executeCommand("jpegoptim", "-m85", "--dest=" + imagePath, imageTempPath.toString());
+                case "webp" -> executeCommand("cwebp", "-q", "85", imageTempPath.toString(), "-o", imagePath.toString());
+                case "tiff", "bmp", "gif", "wbmp" ->
+                        executeCommand("convert", "-layers", "'optimize'", "-fuzz", "7%", imageTempPath.toString(), imagePath.toString());
             }
 
             MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
             int width = image.getWidth();
             int height = image.getHeight();
-            ImageStorage imageStorage = new ImageStorage(imageId, fileExtension.toLowerCase(), width, height);
+            ImageStorage imageStorage = new ImageStorage(imageId, fileExtension, width, height);
             images.insertOne(imageStorage);
 
             return imageId;
         } catch (IOException e) {
+            try {
+                Files.deleteIfExists(imageTempPath);
+                Files.deleteIfExists(imagePath);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
             throw new RuntimeException(e);
         }
     }
@@ -251,6 +222,14 @@ public class StaticFileManager {
             ImageStorage imageStorage = new ImageStorage(imageId, "png", width, height);
             images.insertOne(imageStorage);
             return imageStorage;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void executeCommand(String... args) {
+        try {
+            Runtime.getRuntime().exec(args).waitFor();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
