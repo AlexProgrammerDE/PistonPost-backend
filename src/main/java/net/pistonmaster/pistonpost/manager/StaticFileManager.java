@@ -115,7 +115,7 @@ public class StaticFileManager {
             System.out.println(imagePath);
 
             switch (fileExtension) {
-                case "png" -> executeCommand("optipng", "-o7", "-out", imagePath.toString(), imageTempPath.toString());
+                case "png" -> executeCommand("optipng", "-o1", "-out", imagePath.toString(), imageTempPath.toString());
                 case "jpg", "jpeg" -> {
                     executeCommand("jpegoptim", "-m85", imageTempPath.toString());
                     Files.move(imageTempPath, imagePath);
