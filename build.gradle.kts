@@ -32,6 +32,7 @@ dependencies {
     implementation("commons-io:commons-io:2.11.0")
 
     implementation("com.twelvemonkeys.servlet:servlet:3.8.3:jakarta@jar")
+    implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.8.3")
     implementation("com.twelvemonkeys.imageio:imageio-webp:3.8.3")
 
     implementation("org.jcodec:jcodec:0.2.5")
