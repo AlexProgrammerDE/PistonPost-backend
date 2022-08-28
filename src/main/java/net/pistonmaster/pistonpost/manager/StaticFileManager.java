@@ -94,7 +94,7 @@ public class StaticFileManager {
 
             ImageReader reader = null;
             for (ImageReader reader2 : readers) {
-                if (reader2.toString().contains("twelvemonkeys")) {
+                if (reader2.toString().contains("twelvemonkeys") && !reader2.toString().contains("jpeg")) {
                     reader = reader2;
                     break;
                 }
