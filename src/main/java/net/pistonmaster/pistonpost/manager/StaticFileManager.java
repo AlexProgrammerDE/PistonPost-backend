@@ -104,7 +104,7 @@ public class StaticFileManager {
                 reader = readers.get(0);
             }
 
-            reader.setInput(in, true, true);
+            reader.setInput(in, true, false);
             int width = reader.getWidth(0);
             int height = reader.getHeight(0);
             reader.dispose();

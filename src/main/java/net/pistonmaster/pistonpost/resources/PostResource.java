@@ -26,7 +26,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -76,25 +75,15 @@ public class PostResource {
                 if (imageParts.size() > MAX_IMAGES) {
                     throw new WebApplicationException("You can only upload a maximum of " + MAX_IMAGES + " images!", 400);
                 }
-                CountDownLatch latch = new CountDownLatch(imageParts.size());
+                Set<CompletableFuture<ObjectId>> futures = new HashSet<>(imageParts.size());
                 for (FormDataBodyPart body : imageParts) {
                     ObjectId imageId = new ObjectId();
                     imageIds.add(imageId);
-                    CompletableFuture.supplyAsync(() ->
-                                    staticFileManager.uploadImage(imageId, database, body.getValueAs(byte[].class), body.getContentDisposition()))
-                            .thenAccept(imagePath -> {
-                                latch.countDown();
-                                System.out.println("Uploaded image: " + imagePath);
-                            }).exceptionally(throwable -> {
-                                latch.countDown();
-                                throwable.printStackTrace();
-                                throw new WebApplicationException(throwable.getMessage(), 500);
-                            });
+                    futures.add(CompletableFuture.supplyAsync(() ->
+                                    staticFileManager.uploadImage(imageId, database, body.getValueAs(byte[].class), body.getContentDisposition())));
                 }
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                for (CompletableFuture<ObjectId> future : futures) {
+                    System.out.println("Uploaded image: " + future.join());
                 }
                 if (imageIds.isEmpty()) {
                     throw new WebApplicationException("Your request is missing data!", 400);
