@@ -40,12 +40,12 @@ dependencies {
     implementation("ws.schild:jave-all-deps:3.3.1")
 
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
-    implementation("org.yaml:snakeyaml:1.30")
+    implementation("org.yaml:snakeyaml:1.31")
 
     implementation("com.squareup.keywhiz:keywhiz-hkdf:0.10.1")
 
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
-    implementation("com.nimbusds:nimbus-jose-jwt:9.24.2")
+    implementation("com.nimbusds:nimbus-jose-jwt:9.24.3")
 
     implementation("org.mongodb:mongodb-driver-sync:4.7.1")
 
