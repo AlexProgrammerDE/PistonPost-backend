@@ -26,6 +26,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -83,7 +84,15 @@ public class PostResource {
                                     staticFileManager.uploadImage(imageId, database, body.getValueAs(byte[].class), body.getContentDisposition())));
                 }
                 for (CompletableFuture<ObjectId> future : futures) {
-                    System.out.println("Uploaded image: " + future.join());
+                    try {
+                        System.out.println("Uploaded image: " + future.join());
+                    } catch (CompletionException e) {
+                        if (e.getCause() instanceof WebApplicationException exception) {
+                            throw exception;
+                        } else {
+                            throw new WebApplicationException("An error occurred while uploading an image!", 500);
+                        }
+                    }
                 }
                 if (imageIds.isEmpty()) {
                     throw new WebApplicationException("Your request is missing data!", 400);
