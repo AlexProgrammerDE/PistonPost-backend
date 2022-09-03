@@ -88,6 +88,7 @@ public class StaticFileManager {
         try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             List<ImageReader> readers = new ArrayList<>();
             ImageIO.getImageReaders(in).forEachRemaining(readers::add);
+            ImageIO.getImageReadersBySuffix(fileExtension).forEachRemaining(readers::add);
             if (readers.isEmpty()) {
                 throw new WebApplicationException("Invalid image format!", 400);
             }
