@@ -84,7 +84,7 @@ public class StaticFileManager {
         }
 
         Path imageTempPath = null;
-        Path imagePath = imagesPath.resolve(imageId + "." + fileExtension).toAbsolutePath();
+        Path imagePath = null;
         try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             List<ImageReader> readers = new ArrayList<>();
             ImageIO.getImageReaders(in).forEachRemaining(readers::add);
@@ -106,6 +106,7 @@ public class StaticFileManager {
             fileExtension = reader.getFormatName().toLowerCase();
 
             imageTempPath = imageTempDir.resolve(imageId + "-uncompressed." + fileExtension).toAbsolutePath();
+            imagePath = imagesPath.resolve(imageId + "." + fileExtension).toAbsolutePath();
             Files.write(imageTempPath, imageData);
 
             switch (fileExtension) {
@@ -130,7 +131,9 @@ public class StaticFileManager {
                 if (imageTempPath != null) {
                     Files.deleteIfExists(imageTempPath);
                 }
-                Files.deleteIfExists(imagePath);
+                if (imagePath != null) {
+                    Files.deleteIfExists(imagePath);
+                }
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
