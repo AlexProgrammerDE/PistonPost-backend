@@ -93,22 +93,42 @@ public class StaticFileManager {
                 throw new WebApplicationException("Invalid image format!", 400);
             }
 
-            ImageReader reader = null;
-            for (ImageReader reader2 : readers) {
-                if (reader2.toString().contains("twelvemonkeys")) {
-                    reader = reader2;
-                    break;
+            readers.sort((reader1, reader2) -> {
+                boolean reader1Proper = reader1.toString().contains("twelvemonkeys");
+                boolean reader2Proper = reader2.toString().contains("twelvemonkeys");
+
+                if (reader1Proper && !reader2Proper) {
+                    return -1;
+                } else if (!reader1Proper && reader2Proper) {
+                    return 1;
+                } else {
+                    return 0;
                 }
+            });
+
+            int width = -1;
+            int height = -1;
+            for (ImageReader reader : readers) {
+                try (ImageInputStream in2 = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
+                    try {
+                        reader.setInput(in2);
+                        width = reader.getWidth(0);
+                        height = reader.getHeight(0);
+                    } catch (Exception e) {
+                        reader.dispose();
+                        e.printStackTrace();
+                        continue;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                reader.dispose();
+                break;
             }
 
-            if (reader == null) {
-                reader = readers.get(0);
+            if (width == -1 || height == -1) {
+                throw new WebApplicationException("Invalid image format!", 400);
             }
-
-            reader.setInput(in);
-            int width = reader.getWidth(0);
-            int height = reader.getHeight(0);
-            reader.dispose();
 
             Files.write(imageTempPath, imageData);
 
