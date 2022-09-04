@@ -34,6 +34,8 @@ dependencies {
     implementation("com.twelvemonkeys.servlet:servlet:3.8.3:jakarta@jar")
     implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.8.3")
     implementation("com.twelvemonkeys.imageio:imageio-webp:3.8.3")
+    implementation("com.twelvemonkeys.imageio:imageio-bmp:3.8.3")
+    implementation("com.twelvemonkeys.imageio:imageio-tiff:3.8.3")
 
     implementation("org.jcodec:jcodec:0.2.5")
     implementation("org.jcodec:jcodec-javase:0.2.5")
