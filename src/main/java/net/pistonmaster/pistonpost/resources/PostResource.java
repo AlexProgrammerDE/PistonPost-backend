@@ -90,7 +90,7 @@ public class PostResource {
                         if (e.getCause() instanceof WebApplicationException exception) {
                             throw exception;
                         } else {
-                            throw new WebApplicationException("An error occurred while uploading an image!", 500);
+                            throw new WebApplicationException("An error occurred while uploading an image!", e.getCause(), 500);
                         }
                     }
                 }
