@@ -94,20 +94,7 @@ public class StaticFileManager {
             if (readers.isEmpty()) {
                 throw new WebApplicationException("Invalid image format!", 400);
             }
-            System.out.println("Image readers: " + readers);
-
-            readers.sort((reader1, reader2) -> {
-                boolean reader1Proper = reader1.toString().contains("twelvemonkeys");
-                boolean reader2Proper = reader2.toString().contains("twelvemonkeys");
-
-                if (reader1Proper && !reader2Proper) {
-                    return -1;
-                } else if (!reader1Proper && reader2Proper) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            });
+            System.out.println("Image readers: " + readers + " " + fileExtension);
 
             int width = -1;
             int height = -1;
