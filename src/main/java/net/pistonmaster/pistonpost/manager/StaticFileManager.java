@@ -83,7 +83,7 @@ public class StaticFileManager {
             throw new WebApplicationException("Invalid image extension!", 400);
         }
 
-        Path imageTempPath = imageTempDir.resolve(imageId + "-uncompressed." + fileExtension).toAbsolutePath();
+        Path imageTempPath = null;
         Path imagePath = imagesPath.resolve(imageId + "." + fileExtension).toAbsolutePath();
         try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             List<ImageReader> readers = new ArrayList<>();
@@ -105,6 +105,7 @@ public class StaticFileManager {
 
             fileExtension = reader.getFormatName().toLowerCase();
 
+            imageTempPath = imageTempDir.resolve(imageId + "-uncompressed." + fileExtension).toAbsolutePath();
             Files.write(imageTempPath, imageData);
 
             switch (fileExtension) {
@@ -126,7 +127,9 @@ public class StaticFileManager {
             return imageId;
         } catch (IOException e) {
             try {
-                Files.deleteIfExists(imageTempPath);
+                if (imageTempPath != null) {
+                    Files.deleteIfExists(imageTempPath);
+                }
                 Files.deleteIfExists(imagePath);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
