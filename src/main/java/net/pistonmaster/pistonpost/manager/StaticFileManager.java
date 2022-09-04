@@ -96,29 +96,14 @@ public class StaticFileManager {
             }
             System.out.println("Image readers: " + readers + " " + fileExtension);
 
-            int width = -1;
-            int height = -1;
-            for (ImageReader reader : readers) {
-                try (ImageInputStream in2 = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
-                    try {
-                        reader.setInput(in2);
-                        width = reader.getWidth(0);
-                        height = reader.getHeight(0);
-                    } catch (Exception e) {
-                        reader.dispose();
-                        e.printStackTrace();
-                        continue;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                reader.dispose();
-                break;
-            }
+            ImageReader reader = readers.get(0);
 
-            if (width == -1 || height == -1) {
-                throw new WebApplicationException("Invalid image format!", 400);
-            }
+            reader.setInput(in);
+            int width = reader.getWidth(0);
+            int height = reader.getHeight(0);
+            reader.dispose();
+
+            fileExtension = reader.getFormatName().toLowerCase();
 
             Files.write(imageTempPath, imageData);
 
