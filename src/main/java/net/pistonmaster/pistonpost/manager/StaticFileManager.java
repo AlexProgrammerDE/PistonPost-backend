@@ -113,8 +113,8 @@ public class StaticFileManager {
                 try (InputStream in = new ByteArrayInputStream(imageData)) {
                     Metadata metadata = new Metadata();
                     handleMetaData.invoke(new ImageMetadataExtractor(metadata), WebpMetadataReader.readMetadata(in));
-                    width = metadata.getInt(Property.get("Image Width"));
-                    height = metadata.getInt(Property.get("Image Height"));
+                    width = Integer.parseInt(metadata.get("Image Width"));
+                    height = Integer.parseInt(metadata.get("Image Height"));
                 }
             } else {
                 try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
