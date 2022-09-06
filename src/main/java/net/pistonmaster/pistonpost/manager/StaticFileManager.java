@@ -101,6 +101,7 @@ public class StaticFileManager {
                     height = dimensions.getRight();
                 }
             } else {
+                ImageIO.scanForPlugins();
                 try (ImageInputStream stream = ImageIO.createImageInputStream(imageData)) {
                     Iterator<ImageReader> it = ImageIO.getImageReaders(stream);
                     if (!it.hasNext()) {

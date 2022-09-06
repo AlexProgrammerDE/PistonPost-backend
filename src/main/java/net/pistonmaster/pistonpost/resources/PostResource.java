@@ -74,7 +74,6 @@ public class PostResource {
                 content = content.trim();
             }
             case IMAGES -> {
-                ImageIO.scanForPlugins();
                 List<FormDataBodyPart> imageParts = multiPart.getFields("image");
                 if (imageParts.size() > MAX_IMAGES) {
                     throw new WebApplicationException("You can only upload a maximum of " + MAX_IMAGES + " images!", 400);
