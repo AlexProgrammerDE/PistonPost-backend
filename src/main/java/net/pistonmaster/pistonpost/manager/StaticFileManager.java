@@ -101,8 +101,8 @@ public class StaticFileManager {
                     height = dimensions.getRight();
                 }
             } else {
-                try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
-                    Iterator<ImageReader> it = ImageIO.getImageReaders(in);
+                try (ImageInputStream stream = ImageIO.createImageInputStream(imageData)) {
+                    Iterator<ImageReader> it = ImageIO.getImageReaders(stream);
                     if (!it.hasNext()) {
                         System.out.println(fileExtension + " " + imageMetaData.getFileName());
                         throw new WebApplicationException("Invalid image format!", 400);
@@ -111,7 +111,7 @@ public class StaticFileManager {
                     do {
                         ImageReader reader = it.next();
                         try {
-                            reader.setInput(in);
+                            reader.setInput(stream, true, true);
                             width = reader.getWidth(0);
                             height = reader.getHeight(0);
                             fileExtension = reader.getFormatName().toLowerCase();

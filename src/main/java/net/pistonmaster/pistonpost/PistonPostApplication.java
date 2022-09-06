@@ -85,7 +85,6 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
 
         mongoManager.setConnectUri(configuration.getMongoDbUri());
 
-        ImageIO.scanForPlugins();
         environment.servlets().addServletListeners(new IIOProviderContextListener());
         environment.servlets().addFilter("DoSFilter", new DoSFilter());
 
