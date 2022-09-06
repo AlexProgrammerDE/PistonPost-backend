@@ -108,14 +108,6 @@ public class StaticFileManager {
                     height = dimensions.getRight();
                 }
             } else {
-                JPEGImageReaderSpi.class.getName();
-                BMPImageReaderSpi.class.getName();
-                ICOImageReaderSpi.class.getName();
-                CURImageReaderSpi.class.getName();
-                TIFFImageReaderSpi.class.getName();
-                BigTIFFImageReaderSpi.class.getName();
-                ByteArrayImageInputStreamSpi.class.getName();
-                ImageIO.scanForPlugins();
                 try (ImageInputStream stream = ImageIO.createImageInputStream(imageData)) {
                     Iterator<ImageReader> it = ImageIO.getImageReaders(stream);
                     if (!it.hasNext()) {
