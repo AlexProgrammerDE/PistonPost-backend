@@ -59,7 +59,9 @@ public class StaticFileManager {
 
     private Method getHandleMetaData() {
         try {
-            return ImageMetadataExtractor.class.getDeclaredMethod("handle", com.drew.metadata.Metadata.class);
+            Method method = ImageMetadataExtractor.class.getDeclaredMethod("handle", com.drew.metadata.Metadata.class);
+            method.setAccessible(true);
+            return method;
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
