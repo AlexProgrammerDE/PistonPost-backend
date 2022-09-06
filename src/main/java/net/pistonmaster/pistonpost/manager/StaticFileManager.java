@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -105,10 +104,11 @@ public class StaticFileManager {
                 try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
                     Iterator<ImageReader> it = ImageIO.getImageReaders(in);
                     if (!it.hasNext()) {
+                        System.out.println(fileExtension + " " + imageMetaData.getFileName());
                         throw new WebApplicationException("Invalid image format!", 400);
                     }
 
-                    while (it.hasNext()) {
+                    do {
                         ImageReader reader = it.next();
                         try {
                             reader.setInput(in);
@@ -121,7 +121,7 @@ public class StaticFileManager {
                         } finally {
                             reader.dispose();
                         }
-                    }
+                    } while (it.hasNext());
                 }
             }
 
