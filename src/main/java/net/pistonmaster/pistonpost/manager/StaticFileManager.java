@@ -101,6 +101,12 @@ public class StaticFileManager {
                     height = dimensions.getRight();
                 }
             } else {
+                com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReaderSpi.class.getName();
+                com.twelvemonkeys.imageio.plugins.bmp.BMPImageReaderSpi.class.getName();
+                com.twelvemonkeys.imageio.plugins.bmp.ICOImageReaderSpi.class.getName();
+                com.twelvemonkeys.imageio.plugins.bmp.CURImageReaderSpi.class.getName();
+                com.twelvemonkeys.imageio.plugins.tiff.TIFFImageReaderSpi.class.getName();
+                com.twelvemonkeys.imageio.plugins.tiff.BigTIFFImageReaderSpi.class.getName();
                 ImageIO.scanForPlugins();
                 try (ImageInputStream stream = ImageIO.createImageInputStream(imageData)) {
                     Iterator<ImageReader> it = ImageIO.getImageReaders(stream);
