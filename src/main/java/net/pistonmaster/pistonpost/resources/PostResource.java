@@ -87,12 +87,11 @@ public class PostResource {
                     try {
                         System.out.println("Uploaded image: " + future.join());
                     } catch (CompletionException e) {
-                        /*
                         if (e.getCause() instanceof WebApplicationException exception) {
                             throw exception;
                         } else {
                             throw new WebApplicationException("An error occurred while uploading an image!", e.getCause(), 500);
-                        }*/
+                        }
                     }
                 }
                 if (imageIds.isEmpty()) {

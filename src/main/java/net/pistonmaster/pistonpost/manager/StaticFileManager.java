@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.storage.ImageStorage;
 import net.pistonmaster.pistonpost.storage.VideoStorage;
+import net.pistonmaster.pistonpost.utils.WebPDimensionReader;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.jcodec.api.FrameGrab;
@@ -28,9 +30,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -85,25 +89,45 @@ public class StaticFileManager {
 
         Path imageTempPath = null;
         Path imagePath = null;
-        try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
-            List<ImageReader> readers = new ArrayList<>();
-            ImageIO.getImageReaders(in).forEachRemaining(readers::add);
+        try {
+            int width = -1;
+            int height = -1;
             if (fileExtension.equals("webp")) {
-                ImageIO.getImageReadersBySuffix(fileExtension).forEachRemaining(readers::add);
+                try (InputStream in = new ByteArrayInputStream(imageData)) {
+                    Pair<Integer, Integer> dimensions = WebPDimensionReader.extract(in);
+                    if (dimensions == null) {
+                        throw new WebApplicationException("Invalid webp image!", 400);
+                    }
+                    width = dimensions.getLeft();
+                    height = dimensions.getRight();
+                }
+            } else {
+                try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
+                    Iterator<ImageReader> it = ImageIO.getImageReaders(in);
+                    if (!it.hasNext()) {
+                        throw new WebApplicationException("Invalid image format!", 400);
+                    }
+
+                    while (it.hasNext()) {
+                        ImageReader reader = it.next();
+                        try {
+                            reader.setInput(in);
+                            width = reader.getWidth(0);
+                            height = reader.getHeight(0);
+                            fileExtension = reader.getFormatName().toLowerCase();
+                            break;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            reader.dispose();
+                        }
+                    }
+                }
             }
-            if (readers.isEmpty()) {
+
+            if (width == -1 || height == -1) {
                 throw new WebApplicationException("Invalid image format!", 400);
             }
-            System.out.println("Image readers: " + readers + " " + fileExtension);
-
-            ImageReader reader = readers.get(0);
-
-            reader.setInput(in);
-            int width = reader.getWidth(0);
-            int height = reader.getHeight(0);
-            reader.dispose();
-
-            fileExtension = reader.getFormatName().toLowerCase();
 
             imageTempPath = imageTempDir.resolve(imageId + "-uncompressed." + fileExtension).toAbsolutePath();
             imagePath = imagesPath.resolve(imageId + "." + fileExtension).toAbsolutePath();
