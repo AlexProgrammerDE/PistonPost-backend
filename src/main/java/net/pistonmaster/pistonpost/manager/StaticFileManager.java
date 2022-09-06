@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.storage.ImageStorage;
 import net.pistonmaster.pistonpost.storage.VideoStorage;
+import net.pistonmaster.pistonpost.utils.WebPDetection;
 import net.pistonmaster.pistonpost.utils.WebPDimensionReader;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -91,7 +92,7 @@ public class StaticFileManager {
         try {
             int width = -1;
             int height = -1;
-            if (fileExtension.equals("webp")) {
+            if (fileExtension.equals("webp") || WebPDetection.determineWebP(new ByteArrayInputStream(imageData))) {
                 try (InputStream in = new ByteArrayInputStream(imageData)) {
                     Pair<Integer, Integer> dimensions = WebPDimensionReader.extract(in);
                     if (dimensions == null) {
