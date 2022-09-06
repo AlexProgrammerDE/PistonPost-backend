@@ -1,14 +1,8 @@
 package net.pistonmaster.pistonpost.manager;
 
+import com.google.common.collect.Iterators;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.twelvemonkeys.imageio.plugins.bmp.BMPImageReaderSpi;
-import com.twelvemonkeys.imageio.plugins.bmp.CURImageReaderSpi;
-import com.twelvemonkeys.imageio.plugins.bmp.ICOImageReaderSpi;
-import com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReaderSpi;
-import com.twelvemonkeys.imageio.plugins.tiff.BigTIFFImageReaderSpi;
-import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageReaderSpi;
-import com.twelvemonkeys.imageio.stream.ByteArrayImageInputStreamSpi;
 import jakarta.ws.rs.WebApplicationException;
 import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
@@ -40,9 +34,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
@@ -108,8 +101,21 @@ public class StaticFileManager {
                     height = dimensions.getRight();
                 }
             } else {
-                try (ImageInputStream stream = ImageIO.createImageInputStream(imageData)) {
-                    Iterator<ImageReader> it = ImageIO.getImageReaders(stream);
+                try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
+                    List<Iterator<ImageReader>> iterators = new ArrayList<>();
+                    iterators.add(ImageIO.getImageReaders(stream));
+                    switch (fileExtension) {
+                        case "jpeg", "jpg" -> iterators.add(ImageIO.getImageReadersByFormatName("jpeg"));
+                        case "png" -> iterators.add(ImageIO.getImageReadersByFormatName("png"));
+                        case "gif" -> iterators.add(ImageIO.getImageReadersByFormatName("gif"));
+                        case "tiff" -> iterators.add(ImageIO.getImageReadersByFormatName("tiff"));
+                        case "bmp" -> iterators.add(ImageIO.getImageReadersByFormatName("bmp"));
+                        case "wbmp" -> iterators.add(ImageIO.getImageReadersByFormatName("wbmp"));
+                    }
+
+                    AtomicReference<Iterator<ImageReader>> atomic = new AtomicReference<>(Collections.emptyIterator());
+                    iterators.stream().filter(Iterator::hasNext).forEach(iter -> atomic.set(Iterators.concat(atomic.get(), iter)));
+                    Iterator<ImageReader> it = atomic.get();
                     if (!it.hasNext()) {
                         System.out.println(fileExtension + " " + imageMetaData.getFileName());
                         throw new WebApplicationException("Invalid image format!", 400);

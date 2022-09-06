@@ -25,7 +25,6 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
-import javax.imageio.ImageIO;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -78,12 +77,26 @@ public class PostResource {
                 if (imageParts.size() > MAX_IMAGES) {
                     throw new WebApplicationException("You can only upload a maximum of " + MAX_IMAGES + " images!", 400);
                 }
+                Set<CompletableFuture<ObjectId>> futures = new HashSet<>(imageParts.size());
                 for (FormDataBodyPart body : imageParts) {
                     ObjectId imageId = new ObjectId();
                     imageIds.add(imageId);
                     byte[] data = body.getValueAs(byte[].class);
                     ContentDisposition contentDisposition = body.getContentDisposition();
-                    System.out.println("Uploaded image: " + staticFileManager.uploadImage(imageId, database, data, contentDisposition));
+                    futures.add(CompletableFuture.supplyAsync(() ->
+                                    staticFileManager.uploadImage(imageId, database, data, contentDisposition)));
+                }
+                for (CompletableFuture<ObjectId> future : futures) {
+                    try {
+                        System.out.println("Uploaded image: " + future.join());
+                    } catch (CompletionException e) {
+                        e.printStackTrace();
+                        if (e.getCause() instanceof WebApplicationException exception) {
+                            throw exception;
+                        } else {
+                            throw new WebApplicationException("An error occurred while uploading an image!", e.getCause(), 500);
+                        }
+                    }
                 }
                 if (imageIds.isEmpty()) {
                     throw new WebApplicationException("Your request is missing data!", 400);
