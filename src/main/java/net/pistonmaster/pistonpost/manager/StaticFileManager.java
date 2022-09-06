@@ -2,6 +2,13 @@ package net.pistonmaster.pistonpost.manager;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.twelvemonkeys.imageio.plugins.bmp.BMPImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.bmp.CURImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.bmp.ICOImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.tiff.BigTIFFImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageReaderSpi;
+import com.twelvemonkeys.imageio.stream.ByteArrayImageInputStreamSpi;
 import jakarta.ws.rs.WebApplicationException;
 import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
@@ -101,12 +108,13 @@ public class StaticFileManager {
                     height = dimensions.getRight();
                 }
             } else {
-                com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReaderSpi.class.getName();
-                com.twelvemonkeys.imageio.plugins.bmp.BMPImageReaderSpi.class.getName();
-                com.twelvemonkeys.imageio.plugins.bmp.ICOImageReaderSpi.class.getName();
-                com.twelvemonkeys.imageio.plugins.bmp.CURImageReaderSpi.class.getName();
-                com.twelvemonkeys.imageio.plugins.tiff.TIFFImageReaderSpi.class.getName();
-                com.twelvemonkeys.imageio.plugins.tiff.BigTIFFImageReaderSpi.class.getName();
+                JPEGImageReaderSpi.class.getName();
+                BMPImageReaderSpi.class.getName();
+                ICOImageReaderSpi.class.getName();
+                CURImageReaderSpi.class.getName();
+                TIFFImageReaderSpi.class.getName();
+                BigTIFFImageReaderSpi.class.getName();
+                ByteArrayImageInputStreamSpi.class.getName();
                 ImageIO.scanForPlugins();
                 try (ImageInputStream stream = ImageIO.createImageInputStream(imageData)) {
                     Iterator<ImageReader> it = ImageIO.getImageReaders(stream);
