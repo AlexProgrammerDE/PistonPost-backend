@@ -1,5 +1,6 @@
 package net.pistonmaster.pistonpost.manager;
 
+import com.drew.imaging.webp.WebpMetadataReader;
 import com.google.common.collect.Iterators;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -12,6 +13,9 @@ import net.pistonmaster.pistonpost.utils.WebPDetection;
 import net.pistonmaster.pistonpost.utils.WebPDimensionReader;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.Property;
+import org.apache.tika.parser.image.ImageMetadataExtractor;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.jcodec.api.FrameGrab;
@@ -33,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -50,6 +55,15 @@ public class StaticFileManager {
     private final Path imageTempDir;
     private final Path videoTempDir;
     private final PistonPostApplication application;
+    private final Method handleMetaData;
+
+    {
+        try {
+            handleMetaData = ImageMetadataExtractor.class.getDeclaredMethod("handle", com.drew.metadata.Metadata.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public StaticFileManager(String staticFilesDir, PistonPostApplication application) {
         this.application = application;
@@ -92,14 +106,13 @@ public class StaticFileManager {
         try {
             int width = -1;
             int height = -1;
+
             if (fileExtension.equals("webp") || WebPDetection.determineWebP(new ByteArrayInputStream(imageData))) {
                 try (InputStream in = new ByteArrayInputStream(imageData)) {
-                    Pair<Integer, Integer> dimensions = WebPDimensionReader.extract(in);
-                    if (dimensions == null) {
-                        throw new WebApplicationException("Invalid webp image!", 400);
-                    }
-                    width = dimensions.getLeft();
-                    height = dimensions.getRight();
+                    Metadata metadata = new Metadata();
+                    handleMetaData.invoke(new ImageMetadataExtractor(metadata), WebpMetadataReader.readMetadata(in));
+                    width = metadata.getInt(Property.get("Image Width"));
+                    height = metadata.getInt(Property.get("Image Height"));
                 }
             } else {
                 try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
@@ -164,7 +177,7 @@ public class StaticFileManager {
             images.insertOne(imageStorage);
 
             return imageId;
-        } catch (IOException e) {
+        } catch (Exception e) {
             try {
                 if (imageTempPath != null) {
                     Files.deleteIfExists(imageTempPath);
