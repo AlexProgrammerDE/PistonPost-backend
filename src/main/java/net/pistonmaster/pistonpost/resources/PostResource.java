@@ -20,10 +20,12 @@ import net.pistonmaster.pistonpost.utils.PostType;
 import net.pistonmaster.pistonpost.utils.VoteType;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import javax.imageio.ImageIO;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -72,6 +74,7 @@ public class PostResource {
                 content = content.trim();
             }
             case IMAGES -> {
+                ImageIO.scanForPlugins();
                 List<FormDataBodyPart> imageParts = multiPart.getFields("image");
                 if (imageParts.size() > MAX_IMAGES) {
                     throw new WebApplicationException("You can only upload a maximum of " + MAX_IMAGES + " images!", 400);
@@ -80,8 +83,10 @@ public class PostResource {
                 for (FormDataBodyPart body : imageParts) {
                     ObjectId imageId = new ObjectId();
                     imageIds.add(imageId);
+                    byte[] data = body.getValueAs(byte[].class);
+                    ContentDisposition contentDisposition = body.getContentDisposition();
                     futures.add(CompletableFuture.supplyAsync(() ->
-                                    staticFileManager.uploadImage(imageId, database, body.getValueAs(byte[].class), body.getContentDisposition())));
+                                    staticFileManager.uploadImage(imageId, database, data, contentDisposition)));
                 }
                 for (CompletableFuture<ObjectId> future : futures) {
                     try {
