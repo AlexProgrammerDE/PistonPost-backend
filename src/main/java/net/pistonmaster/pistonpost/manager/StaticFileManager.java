@@ -55,11 +55,11 @@ public class StaticFileManager {
     private final Path imageTempDir;
     private final Path videoTempDir;
     private final PistonPostApplication application;
-    private final Method handleMetaData;
+    private final Method handleMetaData = getHandleMetaData();
 
-    {
+    private Method getHandleMetaData() {
         try {
-            handleMetaData = ImageMetadataExtractor.class.getDeclaredMethod("handle", com.drew.metadata.Metadata.class);
+            return ImageMetadataExtractor.class.getDeclaredMethod("handle", com.drew.metadata.Metadata.class);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
