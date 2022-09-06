@@ -87,6 +87,7 @@ public class PostResource {
                     try {
                         System.out.println("Uploaded image: " + future.join());
                     } catch (CompletionException e) {
+                        e.printStackTrace();
                         if (e.getCause() instanceof WebApplicationException exception) {
                             throw exception;
                         } else {
