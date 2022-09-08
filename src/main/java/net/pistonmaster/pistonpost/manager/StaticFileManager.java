@@ -110,6 +110,7 @@ public class StaticFileManager {
             int height = -1;
 
             if (fileExtension.equals("webp") || WebPDetection.determineWebP(new ByteArrayInputStream(imageData))) {
+                fileExtension = "webp";
                 try (InputStream in = new ByteArrayInputStream(imageData)) {
                     Metadata metadata = new Metadata();
                     handleMetaData.invoke(new ImageMetadataExtractor(metadata), WebpMetadataReader.readMetadata(in));
@@ -118,22 +119,8 @@ public class StaticFileManager {
                 }
             } else {
                 try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
-                    List<Iterator<ImageReader>> iterators = new ArrayList<>();
-                    iterators.add(ImageIO.getImageReaders(stream));
-                    switch (fileExtension) {
-                        case "jpeg", "jpg" -> iterators.add(ImageIO.getImageReadersByFormatName("jpeg"));
-                        case "png" -> iterators.add(ImageIO.getImageReadersByFormatName("png"));
-                        case "gif" -> iterators.add(ImageIO.getImageReadersByFormatName("gif"));
-                        case "tiff" -> iterators.add(ImageIO.getImageReadersByFormatName("tiff"));
-                        case "bmp" -> iterators.add(ImageIO.getImageReadersByFormatName("bmp"));
-                        case "wbmp" -> iterators.add(ImageIO.getImageReadersByFormatName("wbmp"));
-                    }
-
-                    AtomicReference<Iterator<ImageReader>> atomic = new AtomicReference<>(Collections.emptyIterator());
-                    iterators.stream().filter(Iterator::hasNext).forEach(iter -> atomic.set(Iterators.concat(atomic.get(), iter)));
-                    Iterator<ImageReader> it = atomic.get();
+                    Iterator<ImageReader> it = ImageIO.getImageReaders(stream);
                     if (!it.hasNext()) {
-                        System.out.println(fileExtension + " " + imageMetaData.getFileName());
                         throw new WebApplicationException("Invalid image format!", 400);
                     }
 
