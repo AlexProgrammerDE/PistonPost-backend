@@ -36,7 +36,7 @@ public class HomeResource {
             description = "Get posts for home page. Can be accessed without bearer token.",
             tags = {"post"}
     )
-    public List<PostResponse> getHomePosts(@Parameter(hidden = true) @Auth Optional<User> user, @QueryParam("page") @NotEmpty int page) {
+    public List<PostResponse> getHomePosts(@Parameter(hidden = true) @Auth Optional<User> user, @QueryParam("page") int page) {
         if (page < 0)
             page = 0;
 
