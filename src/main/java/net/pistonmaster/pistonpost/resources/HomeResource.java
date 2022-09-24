@@ -5,9 +5,11 @@ import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 import net.pistonmaster.pistonpost.PistonPostApplication;
@@ -34,7 +36,7 @@ public class HomeResource {
             description = "Get posts for home page. Can be accessed without bearer token.",
             tags = {"post"}
     )
-    public List<PostResponse> getHomePosts(@Parameter(hidden = true) @Auth Optional<User> user, int page) {
+    public List<PostResponse> getHomePosts(@Parameter(hidden = true) @Auth Optional<User> user, @QueryParam("page") @NotEmpty int page) {
         if (page < 0)
             page = 0;
 
