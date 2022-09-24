@@ -24,6 +24,7 @@ import static com.mongodb.client.model.Sorts.descending;
 @RequiredArgsConstructor
 @Path("/home")
 public class HomeResource {
+    private static final int POSTS_PER_PAGE = 40;
     private final PistonPostApplication application;
 
     @GET
@@ -33,12 +34,15 @@ public class HomeResource {
             description = "Get posts for home page. Can be accessed without bearer token.",
             tags = {"post"}
     )
-    public List<PostResponse> getHomePosts(@Parameter(hidden = true) @Auth Optional<User> user) {
+    public List<PostResponse> getHomePosts(@Parameter(hidden = true) @Auth Optional<User> user, int page) {
+        if (page < 0)
+            page = 0;
+
         MongoDatabase database = application.getDatabase("pistonpost");
         MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
         List<PostResponse> storageResponse = new ArrayList<>();
-        for (PostStorage post : collection.find().sort(descending("_id")).limit(40)) {
+        for (PostStorage post : collection.find().sort(descending("_id")).skip(page * POSTS_PER_PAGE).limit(POSTS_PER_PAGE)) {
             if (!post.isUnlisted()) {
                 storageResponse.add(application.getPostFillerService().fillPostStorage(user.map(User::getId).orElse(null), post, database));
             }
