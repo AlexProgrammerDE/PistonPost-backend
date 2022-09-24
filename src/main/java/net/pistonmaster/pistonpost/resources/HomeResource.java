@@ -5,7 +5,6 @@ import com.mongodb.client.MongoDatabase;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Sorts.descending;
 
 @RequiredArgsConstructor
@@ -44,11 +44,8 @@ public class HomeResource {
         MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
         List<PostResponse> storageResponse = new ArrayList<>();
-        for (PostStorage post : collection.find().sort(descending("_id")).skip(page * POSTS_PER_PAGE).limit(POSTS_PER_PAGE)) {
-            if (!post.isUnlisted()) {
-                storageResponse.add(application.getPostFillerService().fillPostStorage(user.map(User::getId).orElse(null), post, database));
-            }
-        }
+        collection.find().sort(descending("_id")).filter(eq("unlisted", false)).skip(page * POSTS_PER_PAGE).limit(POSTS_PER_PAGE).forEach(post ->
+                storageResponse.add(application.getPostFillerService().fillPostStorage(user.map(User::getId).orElse(null), post, database)));
 
         return storageResponse;
     }
