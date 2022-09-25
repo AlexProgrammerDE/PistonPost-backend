@@ -27,6 +27,7 @@ public record PostFillerService(PistonPostApplication application) {
         UserDataResponse authorData = fillUserDataStorage(database, post.getAuthor());
 
         List<ImageResponse> imageResponse = null;
+        List<ImageResponse> montageResponse = null;
         VideoResponse videoResponse = null;
 
         if (post.getImageIds() != null) {
@@ -39,6 +40,20 @@ public record PostFillerService(PistonPostApplication application) {
             for (ImageStorage image : imageStorage) {
                 if (image != null) {
                     imageResponse.add(new ImageResponse(image.getId().toHexString(), image.getExtension(), image.getWidth(), image.getHeight()));
+                }
+            }
+        }
+
+        if (post.getMontageIds() != null) {
+            montageResponse = new ArrayList<>();
+            List<ImageStorage> montageStorage = new ArrayList<>();
+            MongoCollection<ImageStorage> imageCollection = database.getCollection("images", ImageStorage.class);
+            for (ObjectId imageId : post.getMontageIds()) {
+                montageStorage.add(imageCollection.find(eq("_id", imageId)).first());
+            }
+            for (ImageStorage montage : montageStorage) {
+                if (montage != null) {
+                    montageResponse.add(new ImageResponse(montage.getId().toHexString(), montage.getExtension(), montage.getWidth(), montage.getHeight()));
                 }
             }
         }
@@ -88,6 +103,7 @@ public record PostFillerService(PistonPostApplication application) {
                 postType,
                 post.getContent(),
                 imageResponse,
+                montageResponse,
                 videoResponse,
                 post.getTags(),
                 commentResponse,
