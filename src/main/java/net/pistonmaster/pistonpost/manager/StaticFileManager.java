@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.in;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
@@ -200,7 +199,7 @@ public class StaticFileManager {
         try {
             MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
             List<Path> imagePaths = new ArrayList<>();
-            images.find(in("_id", imageIds)).forEach(image -> {
+            images.find(eq("_id", imageIds)).forEach(image -> {
                 if (image == null) {
                     throw new WebApplicationException("Image not found!", 404);
                 }
@@ -221,7 +220,6 @@ public class StaticFileManager {
             command.add("-background");
             command.add("none");
             command.add(imageTempPath.toString());
-            System.out.println(String.join(" ", command));
             executeCommand(command.toArray(new String[0]));
 
             executeCommand("optipng", "-o1", "-out", imagePath.toString(), imageTempPath.toString());
@@ -358,7 +356,7 @@ public class StaticFileManager {
         args[0] = findExecutableOnPath(args[0]);
         try {
             ProcessBuilder builder = new ProcessBuilder(args)
-                    .inheritIO();
+                    .redirectErrorStream(true);
             Process process = builder.start();
             process.waitFor();
         } catch (Exception e) {
