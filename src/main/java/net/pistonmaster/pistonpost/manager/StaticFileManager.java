@@ -1,7 +1,6 @@
 package net.pistonmaster.pistonpost.manager;
 
 import com.drew.imaging.webp.WebpMetadataReader;
-import com.google.common.collect.Iterators;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import jakarta.ws.rs.WebApplicationException;
@@ -10,11 +9,8 @@ import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.storage.ImageStorage;
 import net.pistonmaster.pistonpost.storage.VideoStorage;
 import net.pistonmaster.pistonpost.utils.WebPDetection;
-import net.pistonmaster.pistonpost.utils.WebPDimensionReader;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.Property;
 import org.apache.tika.parser.image.ImageMetadataExtractor;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
@@ -40,8 +36,12 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static com.mongodb.client.model.Filters.eq;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
@@ -56,16 +56,6 @@ public class StaticFileManager {
     private final Path videoTempDir;
     private final PistonPostApplication application;
     private final Method handleMetaData = getHandleMetaData();
-
-    private Method getHandleMetaData() {
-        try {
-            Method method = ImageMetadataExtractor.class.getDeclaredMethod("handle", com.drew.metadata.Metadata.class);
-            method.setAccessible(true);
-            return method;
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public StaticFileManager(String staticFilesDir, PistonPostApplication application) {
         this.application = application;
@@ -82,6 +72,26 @@ public class StaticFileManager {
 
     public static long bytesToMB(long bytes) {
         return bytes / MEGABYTE;
+    }
+
+    public static String findExecutableOnPath(String name) {
+        for (String dirname : System.getenv("PATH").split(File.pathSeparator)) {
+            File file = new File(dirname, name);
+            if (file.isFile() && file.canExecute()) {
+                return file.getAbsolutePath();
+            }
+        }
+        throw new AssertionError("should have found the executable");
+    }
+
+    private Method getHandleMetaData() {
+        try {
+            Method method = ImageMetadataExtractor.class.getDeclaredMethod("handle", com.drew.metadata.Metadata.class);
+            method.setAccessible(true);
+            return method;
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void init() {
@@ -164,6 +174,76 @@ public class StaticFileManager {
             MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
             ImageStorage imageStorage = new ImageStorage(imageId, fileExtension, width, height);
             images.insertOne(imageStorage);
+
+            return imageId;
+        } catch (Exception e) {
+            try {
+                if (imageTempPath != null) {
+                    Files.deleteIfExists(imageTempPath);
+                }
+                if (imagePath != null) {
+                    Files.deleteIfExists(imagePath);
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ObjectId createMontage(List<ObjectId> imageIds, MongoDatabase mongoDatabase) {
+        ObjectId imageId = new ObjectId();
+
+        Path imageTempPath = null;
+        Path imagePath = null;
+        try {
+            MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
+            List<Path> imagePaths = new ArrayList<>();
+            images.find(eq("_id", imageIds)).forEach(image -> {
+                if (image == null) {
+                    throw new WebApplicationException("Image not found!", 404);
+                }
+                imagePaths.add(imagesPath.resolve(image.getId() + "." + image.getExtension()));
+            });
+            imageTempPath = imageTempDir.resolve(imageId + "-uncompressed.png").toAbsolutePath();
+            imagePath = imagesPath.resolve(imageId + ".png").toAbsolutePath();
+
+            List<String> command = new ArrayList<>();
+            command.add("montage");
+            for (Path path : imagePaths) {
+                command.add(path.toString());
+            }
+            command.add("-tile");
+            command.add("3x");
+            command.add("-geometry");
+            command.add("+0+0");
+            command.add("-background");
+            command.add("none");
+            command.add(imageTempPath.toString());
+            executeCommand(command.toArray(new String[0]));
+
+            executeCommand("optipng", "-o1", "-out", imagePath.toString(), imageTempPath.toString());
+
+            try (ImageInputStream stream = ImageIO.createImageInputStream(imagePath.toFile())) {
+                Iterator<ImageReader> it = ImageIO.getImageReaders(stream);
+                if (!it.hasNext()) {
+                    throw new WebApplicationException("Invalid image format!", 400);
+                }
+
+                do {
+                    ImageReader reader = it.next();
+                    try {
+                        reader.setInput(stream, true, true);
+                        ImageStorage imageStorage = new ImageStorage(imageId, "png", reader.getWidth(0), reader.getHeight(0));
+                        images.insertOne(imageStorage);
+                        break;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        reader.dispose();
+                    }
+                } while (it.hasNext());
+            }
 
             return imageId;
         } catch (Exception e) {
@@ -282,15 +362,5 @@ public class StaticFileManager {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static String findExecutableOnPath(String name) {
-        for (String dirname : System.getenv("PATH").split(File.pathSeparator)) {
-            File file = new File(dirname, name);
-            if (file.isFile() && file.canExecute()) {
-                return file.getAbsolutePath();
-            }
-        }
-        throw new AssertionError("should have found the executable");
     }
 }

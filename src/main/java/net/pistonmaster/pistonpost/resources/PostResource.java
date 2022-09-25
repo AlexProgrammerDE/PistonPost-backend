@@ -64,6 +64,7 @@ public class PostResource {
 
         String content = null;
         List<ObjectId> imageIds = Collections.synchronizedList(new ArrayList<>());
+        List<ObjectId> montageIds = new ArrayList<>();
         ObjectId videoId = null;
 
         switch (type) {
@@ -84,7 +85,7 @@ public class PostResource {
                     byte[] data = body.getValueAs(byte[].class);
                     ContentDisposition contentDisposition = body.getContentDisposition();
                     futures.add(CompletableFuture.supplyAsync(() ->
-                                    staticFileManager.uploadImage(imageId, database, data, contentDisposition)));
+                            staticFileManager.uploadImage(imageId, database, data, contentDisposition)));
                 }
                 for (CompletableFuture<ObjectId> future : futures) {
                     try {
@@ -100,6 +101,9 @@ public class PostResource {
                 }
                 if (imageIds.isEmpty()) {
                     throw new WebApplicationException("Your request is missing data!", 400);
+                }
+                if (imageIds.size() >= 10) {
+                    montageIds.add(staticFileManager.createMontage(imageIds.subList(0, 9), database));
                 }
             }
             case VIDEO -> {
@@ -126,6 +130,7 @@ public class PostResource {
                 type,
                 content,
                 imageIds,
+                montageIds,
                 videoId,
                 user.getId(),
                 tagList,
