@@ -13,11 +13,12 @@ import java.nio.charset.StandardCharsets;
 public class WebPDetection {
     private static final int EXTENDED_WEBP_HEADER_LENGTH = 21;
     private static final int SIMPLE_WEBP_HEADER_LENGTH = 20;
+    private static final byte[] WEBP_RIFF_BYTES = asciiBytes("RIFF");
+    private static final byte[] WEBP_NAME_BYTES = asciiBytes("WEBP");
+
     final static int MAX_HEADER_LENGTH = Ints.max(
             EXTENDED_WEBP_HEADER_LENGTH,
             SIMPLE_WEBP_HEADER_LENGTH);
-    private static final byte[] WEBP_RIFF_BYTES = asciiBytes("RIFF");
-    private static final byte[] WEBP_NAME_BYTES = asciiBytes("WEBP");
 
     public static boolean determineWebP(final InputStream is) throws IOException {
         final byte[] imageHeaderBytes = new byte[MAX_HEADER_LENGTH];

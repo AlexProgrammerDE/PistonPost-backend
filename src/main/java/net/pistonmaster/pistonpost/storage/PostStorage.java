@@ -19,7 +19,6 @@ public class PostStorage {
     private PostType type;
     private String content;
     private List<ObjectId> imageIds;
-    private List<ObjectId> montageIds;
     private ObjectId videoId;
     private ObjectId author;
     private List<String> tags;
