@@ -28,6 +28,7 @@ import net.pistonmaster.pistonpost.auth.UserAuthorizer;
 import net.pistonmaster.pistonpost.manager.StaticFileManager;
 import net.pistonmaster.pistonpost.resources.*;
 import net.pistonmaster.pistonpost.servlets.FileAssetServlet;
+import net.pistonmaster.pistonpost.tasks.CleanTask;
 import net.pistonmaster.pistonpost.utils.PostFillerService;
 import org.eclipse.jetty.servlets.DoSFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -36,6 +37,8 @@ import javax.imageio.ImageIO;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,6 +47,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
     private final MongoManager mongoManager = new MongoManager();
     private final Faker faker = new Faker();
     private final PostFillerService postFillerService = new PostFillerService(this);
+    private final Timer timer = new Timer();
 
     public static void main(String[] args) throws Exception {
         new PistonPostApplication().run("server", "/config.yml");
@@ -99,6 +103,7 @@ public class PistonPostApplication extends Application<PistonPostConfiguration> 
         StaticFileManager staticFileManager = new StaticFileManager(configuration.getStaticFilesPath(), this);
         staticFileManager.init();
         environment.jersey().register(new PostResource(this, staticFileManager));
+        timer.scheduleAtFixedRate(new CleanTask(staticFileManager), 0, TimeUnit.HOURS.toMillis(1));
 
         OpenAPI oas = new OpenAPI();
         Info info = new Info()

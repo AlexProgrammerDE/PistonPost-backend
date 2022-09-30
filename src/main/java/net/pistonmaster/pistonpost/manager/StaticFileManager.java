@@ -42,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
@@ -292,5 +293,40 @@ public class StaticFileManager {
             }
         }
         throw new AssertionError("should have found the executable");
+    }
+
+    public void cleanUnusedFiles() {
+        try {
+            MongoDatabase mongoDatabase = application.getDatabase("pistonpost");
+            MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
+            MongoCollection<VideoStorage> videos = mongoDatabase.getCollection("videos", VideoStorage.class);
+
+            List<ObjectId> imageIds = images.find().map(ImageStorage::getId).into(new ArrayList<>());
+            List<ObjectId> videoIds = videos.find().map(VideoStorage::getId).into(new ArrayList<>());
+
+            try (Stream<Path> imageStream = Files.list(imagesPath)) {
+                imageStream.filter(path -> !imageIds.contains(new ObjectId(FilenameUtils.getBaseName(path.getFileName().toString()))))
+                        .forEach(path -> {
+                            try {
+                                Files.deleteIfExists(path);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            }
+
+            try (Stream<Path> videoStream = Files.list(videosPath)) {
+                videoStream.filter(path -> !videoIds.contains(new ObjectId(FilenameUtils.getBaseName(path.getFileName().toString()))))
+                        .forEach(path -> {
+                            try {
+                                Files.deleteIfExists(path);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
