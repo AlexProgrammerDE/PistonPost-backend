@@ -23,7 +23,6 @@ server:
   applicationConnectors:
     - type: http
       port: 5757
-      useForwardedHeaders: true
   adminConnectors:
     - type: http
       port: 5758
