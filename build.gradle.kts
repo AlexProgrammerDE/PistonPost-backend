@@ -18,9 +18,9 @@ dependencies {
     implementation("io.dropwizard:dropwizard-auth:4.0.0-beta.2")
     implementation("io.dropwizard:dropwizard-forms:4.0.0-beta.2")
 
-    implementation("io.swagger.core.v3:swagger-core-jakarta:2.2.2")
-    implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.2")
-    implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.2")
+    implementation("io.swagger.core.v3:swagger-core-jakarta:2.2.3")
+    implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.3")
+    implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.3")
 
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
@@ -44,12 +44,12 @@ dependencies {
     implementation("ws.schild:jave-all-deps:3.3.1")
 
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
-    implementation("org.yaml:snakeyaml:1.32")
+    implementation("org.yaml:snakeyaml:1.33")
 
     implementation("com.squareup.keywhiz:keywhiz-hkdf:0.10.1")
 
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
-    implementation("com.nimbusds:nimbus-jose-jwt:9.25.3")
+    implementation("com.nimbusds:nimbus-jose-jwt:9.25.4")
 
     implementation("org.mongodb:mongodb-driver-sync:4.7.1")
 
