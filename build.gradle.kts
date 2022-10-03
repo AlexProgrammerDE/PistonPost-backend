@@ -36,7 +36,7 @@ dependencies {
     implementation("com.twelvemonkeys.imageio:imageio-bmp:3.8.3")
     implementation("com.twelvemonkeys.imageio:imageio-tiff:3.8.3")
 
-    implementation("org.apache.tika:tika-core:2.4.1")
+    implementation("org.apache.tika:tika-core:2.5.0")
     implementation("org.apache.tika:tika-parser-image-module:2.4.1")
 
     implementation("org.jcodec:jcodec:0.2.5")
