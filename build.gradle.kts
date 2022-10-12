@@ -14,9 +14,9 @@ repositories {
 }
 
 dependencies {
-    implementation("io.dropwizard:dropwizard-core:4.0.0-beta.2")
-    implementation("io.dropwizard:dropwizard-auth:4.0.0-beta.2")
-    implementation("io.dropwizard:dropwizard-forms:4.0.0-beta.2")
+    implementation("io.dropwizard:dropwizard-core:4.0.0-beta.3")
+    implementation("io.dropwizard:dropwizard-auth:4.0.0-beta.3")
+    implementation("io.dropwizard:dropwizard-forms:4.0.0-beta.3")
 
     implementation("io.swagger.core.v3:swagger-core-jakarta:2.2.3")
     implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.3")
