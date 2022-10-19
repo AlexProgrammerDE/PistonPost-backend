@@ -33,7 +33,7 @@ dependencies {
 
     implementation("com.twelvemonkeys.servlet:servlet:3.8.3:jakarta@jar")
     implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.9.0")
-    implementation("com.twelvemonkeys.imageio:imageio-bmp:3.9.0")
+    implementation("com.twelvemonkeys.imageio:imageio-bmp:3.9.1")
     implementation("com.twelvemonkeys.imageio:imageio-tiff:3.9.0")
 
     implementation("org.apache.tika:tika-core:2.5.0")
