@@ -38,7 +38,33 @@ public class TagResource {
             description = "Get all posts that have a tag. Does not include private ones.",
             tags = {"tags"}
     )
-    public List<PostResponse> getPost(@Parameter(hidden = true) @Auth Optional<User> user, @PathParam("tagName") String tagName) {
+    public List<PostResponse> getTagged(@Parameter(hidden = true) @Auth Optional<User> user, @PathParam("tagName") String tagName) {
+        MongoDatabase database = application.getDatabase("pistonpost");
+        MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
+
+        List<PostResponse> storageResponse = new ArrayList<>();
+        for (PostStorage post : collection
+                .find(in("tags", tagName))
+                .collation(MongoConstants.CASE_INSENSITIVE)
+                .sort(descending("_id"))
+                .limit(40)) {
+            if (!post.isUnlisted()) {
+                storageResponse.add(application.getPostFillerService().fillPostStorage(user.map(User::getId).orElse(null), post, database));
+            }
+        }
+
+        return storageResponse;
+    }
+
+    @GET
+    @Path("/{tagName}/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Get all posts that have a tag",
+            description = "Get all posts that have a tag. Does not include private ones.",
+            tags = {"tags"}
+    )
+    public List<PostResponse> getTaggedAll(@Parameter(hidden = true) @Auth Optional<User> user, @PathParam("tagName") String tagName) {
         MongoDatabase database = application.getDatabase("pistonpost");
         MongoCollection<PostStorage> collection = database.getCollection("posts", PostStorage.class);
 
