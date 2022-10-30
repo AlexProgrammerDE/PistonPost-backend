@@ -34,8 +34,8 @@ public class TagResource {
     @Path("/{tagName}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
-            summary = "Get all posts that have a tag",
-            description = "Get all posts that have a tag. Does not include private ones.",
+            summary = "Get last 4ß posts that have a tag",
+            description = "Get last 4ß posts that have a tag. Does not include private ones.",
             tags = {"tags"}
     )
     public List<PostResponse> getTagged(@Parameter(hidden = true) @Auth Optional<User> user, @PathParam("tagName") String tagName) {
