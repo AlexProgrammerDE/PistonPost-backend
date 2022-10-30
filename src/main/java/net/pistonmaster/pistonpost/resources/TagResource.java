@@ -46,8 +46,7 @@ public class TagResource {
         for (PostStorage post : collection
                 .find(in("tags", tagName))
                 .collation(MongoConstants.CASE_INSENSITIVE)
-                .sort(descending("_id"))
-                .limit(40)) {
+                .sort(descending("_id"))) {
             if (!post.isUnlisted()) {
                 storageResponse.add(application.getPostFillerService().fillPostStorage(user.map(User::getId).orElse(null), post, database));
             }
