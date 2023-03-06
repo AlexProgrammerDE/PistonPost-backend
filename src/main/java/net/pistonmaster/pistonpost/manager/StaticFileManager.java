@@ -1,7 +1,6 @@
 package net.pistonmaster.pistonpost.manager;
 
 import com.drew.imaging.webp.WebpMetadataReader;
-import com.google.common.collect.Iterators;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import jakarta.ws.rs.WebApplicationException;
@@ -10,11 +9,8 @@ import net.pistonmaster.pistonpost.PistonPostApplication;
 import net.pistonmaster.pistonpost.storage.ImageStorage;
 import net.pistonmaster.pistonpost.storage.VideoStorage;
 import net.pistonmaster.pistonpost.utils.WebPDetection;
-import net.pistonmaster.pistonpost.utils.WebPDimensionReader;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.Property;
 import org.apache.tika.parser.image.ImageMetadataExtractor;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
@@ -40,14 +36,17 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class StaticFileManager {
     private static final List<String> ALLOWED_IMAGE_EXTENSION = List.of("png", "jpg", "jpeg", "webp", "gif", "tiff", "bmp", "wbmp");
     private static final List<String> ALLOWED_VIDEO_EXTENSION = List.of("mp4", "mov", "webm", "mpeg", "mpg", "avi");
+    private static final int MAX_IMAGE_UPLOAD_SIZE_MB = 20;
     private static final int MAX_IMAGE_SIZE_MB = 5;
     private static final int MAX_VIDEO_SIZE_MB = 50;
     private static final long MEGABYTE = 1024L * 1024L;
@@ -96,8 +95,8 @@ public class StaticFileManager {
 
     public ObjectId uploadImage(ObjectId imageId, MongoDatabase mongoDatabase, byte[] imageData, ContentDisposition imageMetaData) {
         String fileName = imageMetaData.getFileName();
-        if (bytesToMB(imageData.length) > MAX_IMAGE_SIZE_MB) {
-            throw new WebApplicationException(String.format("Image %s is too big", fileName), 413);
+        if (bytesToMB(imageData.length) > MAX_IMAGE_UPLOAD_SIZE_MB) {
+            throw new WebApplicationException(String.format("Image %s is too big (Without compression)", fileName), 413);
         }
 
         String fileExtension = FilenameUtils.getExtension(fileName).toLowerCase();
@@ -163,11 +162,17 @@ public class StaticFileManager {
                         executeCommand("convert", "-layers", "Optimize", "-fuzz", "2%", imageTempPath.toString(), imagePath.toString());
             }
 
+            if (bytesToMB(Files.readAllBytes(imagePath).length) > MAX_IMAGE_SIZE_MB) {
+                throw new WebApplicationException(String.format("Image %s is too big (Even after compression)", fileName), 413);
+            }
+
             MongoCollection<ImageStorage> images = mongoDatabase.getCollection("images", ImageStorage.class);
             ImageStorage imageStorage = new ImageStorage(imageId, fileExtension, width, height);
             images.insertOne(imageStorage);
 
             return imageId;
+        } catch (WebApplicationException e) {
+            throw e;
         } catch (Exception e) {
             try {
                 if (imageTempPath != null) {
