@@ -95,13 +95,14 @@ public class StaticFileManager {
     }
 
     public ObjectId uploadImage(ObjectId imageId, MongoDatabase mongoDatabase, byte[] imageData, ContentDisposition imageMetaData) {
+        String fileName = imageMetaData.getFileName();
         if (bytesToMB(imageData.length) > MAX_IMAGE_SIZE_MB) {
-            throw new WebApplicationException("Image is too big", 413);
+            throw new WebApplicationException(String.format("Image %s is too big", fileName), 413);
         }
 
-        String fileExtension = FilenameUtils.getExtension(imageMetaData.getFileName()).toLowerCase();
+        String fileExtension = FilenameUtils.getExtension(fileName).toLowerCase();
         if (!ALLOWED_IMAGE_EXTENSION.contains(fileExtension)) {
-            throw new WebApplicationException("Invalid image extension!", 400);
+            throw new WebApplicationException(String.format("Invalid image extension! (%s)", fileName), 400);
         }
 
         Path imageTempPath = null;
