@@ -158,7 +158,9 @@ public class StaticFileManager {
                 }
                 case "webp" ->
                         executeCommand("cwebp", "-q", "85", "-o", imagePath.toString(), imageTempPath.toString());
-                case "tiff", "bmp", "gif", "wbmp" ->
+                case "gif" ->
+                        executeCommand("gifsicle", "-i", imageTempPath.toString(), "-O3", "--colors", "256", "--lossy=30", "-o", imagePath.toString());
+                case "tiff", "bmp", "wbmp" ->
                         executeCommand("convert", "-layers", "Optimize", "-fuzz", "2%", imageTempPath.toString(), imagePath.toString());
             }
 
