@@ -22,8 +22,8 @@ dependencies {
     implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.10")
     implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.10")
 
-    compileOnly("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
+    compileOnly("org.projectlombok:lombok:1.18.28")
+    annotationProcessor("org.projectlombok:lombok:1.18.28")
 
     implementation("com.github.javafaker:javafaker:1.0.2") {
         exclude("org.yaml")
