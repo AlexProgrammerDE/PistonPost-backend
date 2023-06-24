@@ -20,7 +20,7 @@ dependencies {
 
     implementation("io.swagger.core.v3:swagger-core-jakarta:2.2.13")
     implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.12")
-    implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.12")
+    implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.13")
 
     compileOnly("org.projectlombok:lombok:1.18.28")
     annotationProcessor("org.projectlombok:lombok:1.18.28")
