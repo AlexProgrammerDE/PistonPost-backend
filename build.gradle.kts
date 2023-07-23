@@ -53,7 +53,7 @@ dependencies {
 
     implementation("org.mongodb:mongodb-driver-sync:4.10.2")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
