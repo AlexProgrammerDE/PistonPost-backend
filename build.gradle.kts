@@ -41,7 +41,7 @@ dependencies {
 
     implementation("org.jcodec:jcodec:0.2.5")
     implementation("org.jcodec:jcodec-javase:0.2.5")
-    implementation("ws.schild:jave-all-deps:3.3.1")
+    implementation("ws.schild:jave-all-deps:3.4.0")
 
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
     implementation("org.yaml:snakeyaml:2.2")
