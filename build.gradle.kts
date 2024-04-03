@@ -51,7 +51,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
     implementation("com.nimbusds:nimbus-jose-jwt:9.37.3")
 
-    implementation("org.mongodb:mongodb-driver-sync:4.11.1")
+    implementation("org.mongodb:mongodb-driver-sync:4.11.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
