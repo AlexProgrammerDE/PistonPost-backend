@@ -49,7 +49,7 @@ dependencies {
     implementation("com.squareup.keywhiz:keywhiz-hkdf:0.10.1")
 
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
-    implementation("com.nimbusds:nimbus-jose-jwt:9.39.2")
+    implementation("com.nimbusds:nimbus-jose-jwt:9.39.3")
 
     implementation("org.mongodb:mongodb-driver-sync:4.11.2")
 
