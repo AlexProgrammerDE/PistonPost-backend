@@ -19,7 +19,7 @@ dependencies {
     implementation("io.dropwizard:dropwizard-forms:4.0.8")
 
     implementation("io.swagger.core.v3:swagger-core-jakarta:2.2.23")
-    implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.22")
+    implementation("io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.23")
     implementation("io.swagger.core.v3:swagger-integration-jakarta:2.2.23")
 
     compileOnly("org.projectlombok:lombok:1.18.34")
