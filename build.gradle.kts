@@ -44,7 +44,7 @@ dependencies {
     implementation("ws.schild:jave-all-deps:3.5.0")
 
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
-    implementation("org.yaml:snakeyaml:2.2")
+    implementation("org.yaml:snakeyaml:2.3")
 
     implementation("com.squareup.keywhiz:keywhiz-hkdf:0.10.1")
 
