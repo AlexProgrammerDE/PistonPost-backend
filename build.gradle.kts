@@ -32,7 +32,7 @@ dependencies {
     implementation("commons-io:commons-io:2.17.0")
 
     implementation("com.twelvemonkeys.servlet:servlet:3.8.3:jakarta@jar")
-    implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.11.0")
+    implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.12.0")
     implementation("com.twelvemonkeys.imageio:imageio-bmp:3.12.0")
     implementation("com.twelvemonkeys.imageio:imageio-tiff:3.11.0")
 
